@@ -1,0 +1,2 @@
+serviceClass: de.tum.os.sa.client.IShowcaseService
+path: 45D50611BD4B4FC74C226A26581AF0BB.gwt.rpc

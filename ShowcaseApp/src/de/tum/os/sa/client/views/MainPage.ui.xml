@@ -1,0 +1,134 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui" 
+	xmlns:extGwtWgt="urn:import:com.extjs.gxt.ui.client.widget">
+
+	<ui:style>
+		.important {
+			font-weight: bold;
+		}
+		
+		.vPanelStyle {
+			margin-left: auto;
+			margin-right: auto;
+			width: 1280px;
+			min-width: 85%;
+			max-width: 85%;
+			background-color: AliceBlue;
+		}
+		
+		.listViewStyle {
+			word-wrap: break-word;
+			padding: 5px;
+		}
+		
+		.deckPanelStyle {
+			width: 100%;
+		}
+	</ui:style>
+	<g:VerticalPanel styleName="{style.vPanelStyle}">
+		<!-- HEADER -->
+		<g:cell>
+			<g:HorizontalPanel horizontalAlignment="ALIGN_CENTER"
+				width="100%" height="auto">
+				<g:Cell horizontalAlignment="ALIGN_LEFT">
+					<g:Image url="images/Tum_logo.gif" pixelSize="200, 200"
+						height="200" width="200"></g:Image>
+				</g:Cell>
+				<g:Cell horizontalAlignment="ALIGN_CENTER">
+					<g:Label text="TUM Showcase Management" styleName="titleStyle"
+						horizontalAlignment="ALIGN_CENTER"></g:Label>
+				</g:Cell>
+				<!-- <g:Cell horizontalAlignment="ALIGN_RIGHT"> -->
+				<!-- <g:Image url="images/Tum_logo.gif" pixelSize="100, 100"></g:Image> -->
+				<!-- <view:UserWidget ui:field="userWidget"></view:UserWidget> -->
+				<!-- </g:Cell> -->
+			</g:HorizontalPanel>
+		</g:cell>
+		<!-- BODY -->
+		<g:cell width="100%">
+			<g:HorizontalPanel>
+				<!-- Page selection -->
+				<g:cell>
+					<g:VerticalPanel width="200px" height="auto"
+						horizontalAlignment="ALIGN_LEFT">
+						<g:RadioButton text="Overview" name="rBtnActionGroup"
+							ui:field="rBtnOverview" checked="true"></g:RadioButton>
+						<g:RadioButton text="Manage Events" name="rBtnActionGroup"
+							ui:field="rBtnManageEvents"></g:RadioButton>
+					</g:VerticalPanel>
+				</g:cell>
+
+				<!-- Current page -->
+				<g:cell horizontalAlignment="ALIGN_LEFT" width="100%">
+					<g:DeckPanel ui:field="deckPanelActualView"
+						animationEnabled="true" visible="true" styleName="{style.deckPanelStyle}">
+						<!-- OverView -->
+						<g:HorizontalPanel horizontalAlignment="ALIGN_LEFT"
+							title="Events" width="auto">
+							<g:cell>
+								<extGwtWgt:ListView ui:field="lstViewOverviewAvailableEvents"
+									styleName="{style.listViewStyle}" autoWidth="true" autoHeight="true"
+									title="Events"></extGwtWgt:ListView>
+							</g:cell>
+							<g:cell>
+								<g:Image ui:field="imgEventLogo" width="300px" height="300px"></g:Image>
+							</g:cell>
+							<g:cell>
+								<g:Grid>
+									<g:row>
+										<g:customCell>
+											<g:Label text="Name:"></g:Label>
+										</g:customCell>
+										<g:customCell>
+											<g:TextBox ui:field="txtBoxEventName"></g:TextBox>
+										</g:customCell>
+									</g:row>
+									<g:row>
+										<g:customCell>
+											<g:Label text="Description: "></g:Label>
+										</g:customCell>
+										<g:customCell>
+											<g:TextBox ui:field="txtBoxEventDescription"></g:TextBox>
+										</g:customCell>
+									</g:row>
+									<g:row>
+										<g:customCell>
+											<g:Label text="Location: "></g:Label>
+										</g:customCell>
+										<g:customCell>
+											<g:TextBox ui:field="txtBoxEventLocation"></g:TextBox>
+										</g:customCell>
+									</g:row>
+									<g:row>
+										<g:customCell>
+											<g:Label text="State "></g:Label>
+										</g:customCell>
+										<g:customCell>
+											<g:TextBox ui:field="txtBoxEventState"></g:TextBox>
+										</g:customCell>
+									</g:row>
+									<g:row>
+										<g:customCell>
+											<g:Button ui:field="btnEventStart" text="START"
+												enabled="false"></g:Button>
+										</g:customCell>
+										<g:customCell>
+											<g:Button ui:field="btnEventPause" text="PAUSE"
+												enabled="false"></g:Button>
+										</g:customCell>
+										<g:customCell>
+											<g:Button ui:field="btnEventStop" text="STOP"
+												enabled="false"></g:Button>
+										</g:customCell>
+									</g:row>
+								</g:Grid>
+							</g:cell>
+						</g:HorizontalPanel>
+
+					</g:DeckPanel>
+				</g:cell>
+			</g:HorizontalPanel>
+		</g:cell>
+	</g:VerticalPanel>
+</ui:UiBinder> 
