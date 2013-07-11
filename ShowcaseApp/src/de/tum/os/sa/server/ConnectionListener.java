@@ -43,7 +43,7 @@ public class ConnectionListener extends Thread {
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				out.println(clientID.toString());
 			} catch (Exception e) {
-				System.out.println("Could not greet client!!!!");
+				System.out.println("Could not greet client!");
 				return;
 			}
 		}
