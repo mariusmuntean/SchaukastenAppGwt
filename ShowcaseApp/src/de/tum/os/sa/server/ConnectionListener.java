@@ -40,7 +40,6 @@ public class ConnectionListener extends Thread {
 			UUID clientID = UUID.randomUUID();
 			clientIdToSocketMap.putIfAbsent(clientID.toString(), clientSocket);
 			try {
-				@SuppressWarnings("unused")
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				out.println(clientID.toString());
 			} catch (Exception e) {
