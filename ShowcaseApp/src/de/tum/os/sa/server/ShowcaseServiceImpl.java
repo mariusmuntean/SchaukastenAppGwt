@@ -1,5 +1,8 @@
 package de.tum.os.sa.server;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +10,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.tum.os.sa.client.IShowcaseService;
+import de.tum.os.sa.shared.Command;
+import de.tum.os.sa.shared.CommandType;
 import de.tum.os.sa.shared.DeviceType;
 import de.tum.os.sa.shared.MediaTypes;
 import de.tum.os.sa.shared.DTO.Event;
@@ -31,6 +36,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	private ArrayList<Event> events = new ArrayList<Event>();
 
 	private ConnectionListener conListen;
+	private ConnectionManager conManager;
 	private ConcurrentHashMap<String, Socket> clientIDToSocketMap;
 	private ConcurrentHashMap<String, PlaybackDevice> clientIDToDeviceMap;
 
@@ -41,7 +47,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		generateDummyDevices();
 		generateDummyMedia();
 		generateDummyEvents();
-		
+
+		conManager = new ConnectionManager();
 		conListen = new ConnectionListener();
 		this.clientIDToSocketMap = conListen.startAndGetClientIdsMap();
 		clientIDToDeviceMap = new ConcurrentHashMap<String, PlaybackDevice>();
@@ -55,8 +62,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 				DeviceType.Smartphone, 3.7f);
 		PlaybackDevice pd3 = new PlaybackDevice(UUID.randomUUID().toString(), "Nexus 4",
 				DeviceType.Smartphone, 4.5f);
-		PlaybackDevice pd4 = new PlaybackDevice(UUID.randomUUID().toString(), "Galaxy Nexus",
-				DeviceType.Smartphone, 4.5f);
+		PlaybackDevice pd4 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Galaxy Nexus", DeviceType.Smartphone, 4.5f);
 		registeredDevices.add(pd1);
 		registeredDevices.add(pd2);
 		registeredDevices.add(pd3);
@@ -235,8 +242,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	public Boolean registerDevice(PlaybackDevice device) {
 		/*
 		 * Protocol: first the device connects to the serverSocket, if that is successful the device is added to the
-		 * clientIDToSocketMap and it tries to call this method. Here I'm adding devices to the clientIDToDeviceMap but 
-		 * only those that have successfully been added to clientIDToSocketMap
+		 * clientIDToSocketMap and it tries to call this method. Here I'm adding devices to the clientIDToDeviceMap but only those that
+		 * have successfully been added to clientIDToSocketMap
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
 			clientIDToDeviceMap.putIfAbsent(device.getDeviceId(), device);
@@ -252,9 +259,9 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	@Override
 	public Boolean unregisterDevice(PlaybackDevice device) {
 		/*
-		 * Protocol: when a device has to be removed from the Schaukasten it has the option to inform the server
-		 * that it will become unavailable(to avoid confusion).
-		 * First I check if the device that want's to leave the event was registered in the first place.
+		 * Protocol: when a device has to be removed from the Schaukasten it has the option to inform the server that it will become
+		 * unavailable(to avoid confusion). First I check if the device that want's to leave the event was registered in the first
+		 * place.
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
 			clientIDToSocketMap.remove(device.getDeviceId());
@@ -308,10 +315,37 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Boolean startEvent(Event event) {
-		// TODO Auto-generated method stub
-		return null;
+		return startEvent(event.getEventId());
 	}
-
+	
+	@Override
+	public Boolean startEvent(String eventID) {
+		final Command playCommand = new Command(CommandType.play);
+		for (final String key : this.clientIDToSocketMap.keySet()) {
+			Runnable startEventRunnable = new Runnable() {
+				@Override
+				public void run() {
+//					PrintWriter out = null;
+					ObjectOutputStream oos;
+					try {
+//						out = new PrintWriter(
+//								ShowcaseServiceImpl.this.clientIDToSocketMap.get(key)
+//										.getOutputStream(), true);
+						oos = new ObjectOutputStream(ShowcaseServiceImpl.this.clientIDToSocketMap.get(key)
+										.getOutputStream());
+						oos.writeObject(playCommand);
+//						oos.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+//					out.println(playCommand);
+				}
+			};
+			conManager.doAsync(startEventRunnable);
+		}
+		return true;
+	}
 	@Override
 	public Boolean pauseEvent(Event event) {
 		// TODO Auto-generated method stub
@@ -324,11 +358,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		return null;
 	}
 
-	@Override
-	public Boolean startEvent(String eventID) {
-		// TODO Auto-generated method stub
-		return true;
-	}
+
 
 	@Override
 	public Boolean pauseEvent(String eventID) {
