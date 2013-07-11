@@ -30,6 +30,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	private ArrayList<Media> media = new ArrayList<Media>();
 	private ArrayList<Event> events = new ArrayList<Event>();
 
+	private ConnectionListener conListen;
 	private ConcurrentHashMap<String, Socket> clientIDToSocketMap;
 	private ConcurrentHashMap<String, PlaybackDevice> clientIDToDeviceMap;
 
@@ -40,8 +41,9 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		generateDummyDevices();
 		generateDummyMedia();
 		generateDummyEvents();
-
-		this.clientIDToSocketMap = (new ConnectionListener()).startAndGetClientIdsMap();
+		
+		conListen = new ConnectionListener();
+		this.clientIDToSocketMap = conListen.startAndGetClientIdsMap();
 		clientIDToDeviceMap = new ConcurrentHashMap<String, PlaybackDevice>();
 
 	}
