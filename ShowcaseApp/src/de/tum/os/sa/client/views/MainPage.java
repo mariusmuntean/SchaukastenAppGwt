@@ -58,6 +58,9 @@ public class MainPage extends Composite {
 
 	@UiField
 	Button btnEventStop;
+	
+	@UiField(provided=true)
+	EventWidget eventWidget;
 
 	/*
 	 * Stores region
@@ -95,6 +98,8 @@ public class MainPage extends Composite {
 		lstViewOverviewAvailableEvents = new ListView<DisplayableEvent>();
 		lstViewOverviewAvailableEvents.setSimpleTemplate(displayableDeviceTemplate);
 		lstViewOverviewAvailableEvents.setStore(displayableEventsListStore);
+		
+		eventWidget = new EventWidget(displayableEventsListStore);
 
 	}
 

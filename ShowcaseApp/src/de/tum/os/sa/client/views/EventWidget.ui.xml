@@ -1,0 +1,47 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:extGwtWgt="urn:import:com.extjs.gxt.ui.client.widget">
+
+	<!-- RESOURCES -->
+	<ui:style>
+		.important {
+			font-weight: bold;
+		}
+	</ui:style>
+
+	<ui:image field="genericAvatar" src="res/eventLogo.gif"></ui:image>
+
+	<g:DisclosurePanel title="More" animationEnabled="true"
+		open="false">
+		<g:header>Manage Event</g:header>
+		<g:VerticalPanel>
+			<g:cell>
+				<g:HorizontalPanel>
+				<!-- Event Cover -->
+					<g:cell>
+						<g:DecoratorPanel>
+							<g:VerticalPanel>
+								<g:cell>
+									<g:Image ui:field="imgEventCover" url="{genericAvatar.getURL}"
+										height="400px"></g:Image>
+								</g:cell>
+								<g:cell>
+									<g:HorizontalPanel>
+										<g:cell>
+											<extGwtWgt:ListView ui:field="lstViewEventCovers"
+												width="300" height="100"></extGwtWgt:ListView>
+										</g:cell>
+										<g:cell>
+											<g:Button text="Change Cover"></g:Button>
+										</g:cell>
+									</g:HorizontalPanel>
+								</g:cell>
+							</g:VerticalPanel>
+						</g:DecoratorPanel>
+					</g:cell>
+				</g:HorizontalPanel>
+			</g:cell>
+		</g:VerticalPanel>
+	</g:DisclosurePanel>
+
+</ui:UiBinder> 
