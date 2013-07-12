@@ -35,7 +35,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	private ArrayList<Media> media = new ArrayList<Media>();
 	private ArrayList<Event> events = new ArrayList<Event>();
 
-	private ConnectionListener conListen;
+	private ClientListener clientListen;
 	private ConnectionManager conManager;
 	private ConcurrentHashMap<String, Socket> clientIDToSocketMap;
 	private ConcurrentHashMap<String, PlaybackDevice> clientIDToDeviceMap;
@@ -48,9 +48,9 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		generateDummyMedia();
 		generateDummyEvents();
 
-		conManager = new ConnectionManager();
-		conListen = new ConnectionListener();
-		this.clientIDToSocketMap = conListen.startAndGetClientIdsMap();
+		clientListen = new ClientListener();
+		this.clientIDToSocketMap = clientListen.startAndGetClientIdsMap();
+		conManager = new ConnectionManager(this.clientIDToSocketMap);
 		clientIDToDeviceMap = new ConcurrentHashMap<String, PlaybackDevice>();
 
 	}
@@ -246,7 +246,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		 * have successfully been added to clientIDToSocketMap
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
-			clientIDToDeviceMap.putIfAbsent(device.getDeviceId(), device);
+			clientIDToDeviceMap.put(device.getDeviceId(), device);
 			System.out.println("Registered: " + device.toString());
 			return new Boolean(true);
 		} else {
@@ -317,35 +317,16 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	public Boolean startEvent(Event event) {
 		return startEvent(event.getEventId());
 	}
-	
+
 	@Override
 	public Boolean startEvent(String eventID) {
 		final Command playCommand = new Command(CommandType.play);
-		for (final String key : this.clientIDToSocketMap.keySet()) {
-			Runnable startEventRunnable = new Runnable() {
-				@Override
-				public void run() {
-//					PrintWriter out = null;
-					ObjectOutputStream oos;
-					try {
-//						out = new PrintWriter(
-//								ShowcaseServiceImpl.this.clientIDToSocketMap.get(key)
-//										.getOutputStream(), true);
-						oos = new ObjectOutputStream(ShowcaseServiceImpl.this.clientIDToSocketMap.get(key)
-										.getOutputStream());
-						oos.writeObject(playCommand);
-//						oos.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-//					out.println(playCommand);
-				}
-			};
-			conManager.doAsync(startEventRunnable);
+		for (final String clientID : this.clientIDToSocketMap.keySet()) {
+			conManager.sendCommandAsync(playCommand, clientID);
 		}
 		return true;
 	}
+
 	@Override
 	public Boolean pauseEvent(Event event) {
 		// TODO Auto-generated method stub
@@ -357,8 +338,6 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-
 
 	@Override
 	public Boolean pauseEvent(String eventID) {

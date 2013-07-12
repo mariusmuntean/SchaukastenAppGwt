@@ -6,11 +6,10 @@ import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionListener extends Thread {
+public class ClientListener extends Thread {
 
 	private ServerSocket serverSocket;
 	private ConcurrentHashMap<String, Socket> clientIdToSocketMap = new ConcurrentHashMap<String, Socket>();
-	private boolean healthy = true;
 
 	/*
 	 * (non-Javadoc)
@@ -23,7 +22,6 @@ public class ConnectionListener extends Thread {
 			serverSocket = new ServerSocket(3535);
 		} catch (Exception e) {
 			System.out.println("Could not listen on port 3535!!!");
-			healthy = false;
 			return;
 		}
 		boolean go = true;
@@ -33,12 +31,11 @@ public class ConnectionListener extends Thread {
 				clientSocket = serverSocket.accept();
 			} catch (Exception e) {
 				System.out.println("Error accepting client!!!");
-				healthy = false;
 				return;
 			}
 
 			UUID clientID = UUID.randomUUID();
-			clientIdToSocketMap.putIfAbsent(clientID.toString(), clientSocket);
+			clientIdToSocketMap.put(clientID.toString(), clientSocket);
 			try {
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				out.println(clientID.toString());
@@ -62,11 +59,7 @@ public class ConnectionListener extends Thread {
 			System.out.println("Failed to start!");
 			return null;
 		}
-		if (healthy) {
-			return this.clientIdToSocketMap;
-		} else {
-			return null;
-		}
+		return this.clientIdToSocketMap;
 	}
 
 	public ConcurrentHashMap<String, Socket> getClientIsMap() {
