@@ -114,10 +114,6 @@
 												enabled="false"></g:Button>
 										</g:customCell>
 										<g:customCell>
-											<g:Button ui:field="btnEventPause" text="PAUSE"
-												enabled="false"></g:Button>
-										</g:customCell>
-										<g:customCell>
 											<g:Button ui:field="btnEventStop" text="STOP"
 												enabled="false"></g:Button>
 										</g:customCell>

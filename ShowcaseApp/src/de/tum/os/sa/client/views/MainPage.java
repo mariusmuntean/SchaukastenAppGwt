@@ -59,9 +59,6 @@ public class MainPage extends Composite {
 	@UiField
 	Button btnEventStop;
 
-	@UiField
-	Button btnEventPause;
-
 	/*
 	 * Stores region
 	 */
@@ -115,7 +112,6 @@ public class MainPage extends Composite {
 							showDisplayableEventInfo(de);
 							btnEventStart.setEnabled(true);
 							btnEventStop.setEnabled(true);
-							btnEventPause.setEnabled(true);
 						}
 
 					}
@@ -184,36 +180,6 @@ public class MainPage extends Composite {
 					};
 
 					client.stopEvent(de.getID(), stopEventResultCallback);
-				}
-
-			}
-		});
-
-		btnEventPause.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				if (lstViewOverviewAvailableEvents.getSelectionModel().getSelectedItem() != null) {
-					DisplayableEvent de = lstViewOverviewAvailableEvents
-							.getSelectionModel().getSelectedItem();
-					AsyncCallback<Boolean> pauseEventResultCallback = new AsyncCallback<Boolean>() {
-
-						@Override
-						public void onSuccess(Boolean result) {
-							if (result) {
-								Info.display("Success!", "Event paused!");
-							} else {
-								Info.display("Server error!", "Could not pause event!");
-							}
-						}
-
-						@Override
-						public void onFailure(Throwable caught) {
-							Info.display("Network error!", "Event status is unknown!");
-						}
-					};
-
-					client.pauseEvent(de.getID(), pauseEventResultCallback);
 				}
 
 			}

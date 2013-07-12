@@ -329,25 +329,30 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Boolean pauseEvent(Event event) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean stopEvent(Event event) {
-		// TODO Auto-generated method stub
-		return null;
+		return pauseEvent(event.getEventId());
 	}
 
 	@Override
 	public Boolean pauseEvent(String eventID) {
-		// TODO Auto-generated method stub
-		return false;
+		final Command pauseCommand = new Command(CommandType.pause);
+		for (final String clientID : this.clientIDToSocketMap.keySet()) {
+			conManager.sendCommandAsync(pauseCommand, clientID);
+		}
+		return true;
+	}
+
+	@Override
+	public Boolean stopEvent(Event event) {
+		return stopEvent(event.getEventId());
 	}
 
 	@Override
 	public Boolean stopEvent(String eventID) {
-		// TODO Auto-generated method stub
-		return false;
+		final Command stopCommand = new Command(CommandType.stop);
+		for (final String clientID : this.clientIDToSocketMap.keySet()) {
+			conManager.sendCommandAsync(stopCommand, clientID);
+		}
+		return true;
 	}
+
 }
