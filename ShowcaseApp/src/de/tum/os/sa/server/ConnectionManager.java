@@ -5,7 +5,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.tum.os.sa.shared.Command;
+import de.tum.os.sa.shared.commands.Command;
 
 public class ConnectionManager {
 
@@ -21,7 +21,8 @@ public class ConnectionManager {
 		final ObjectOutputStream oos;
 		if (!clientIdToOosMap.containsKey(clientId)
 				&& clientsIdToSocketMap.containsKey(clientId)) {
-			oos = getOosToClient(clientId);
+			oos = openOosToClient(clientId);
+			clientIdToOosMap.put(clientId, oos);
 		} else {
 			oos = clientIdToOosMap.get(clientId);
 		}
@@ -41,12 +42,11 @@ public class ConnectionManager {
 		sendThread.start();
 	}
 
-	private ObjectOutputStream getOosToClient(String clientId) {
+	private ObjectOutputStream openOosToClient(String clientId) {
 		ObjectOutputStream oos = null;
 		try {
 			oos = new ObjectOutputStream(clientsIdToSocketMap.get(clientId)
 					.getOutputStream());
-			clientIdToOosMap.put(clientId, oos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

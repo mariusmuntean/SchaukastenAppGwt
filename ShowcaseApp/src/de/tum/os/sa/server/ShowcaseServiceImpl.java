@@ -10,13 +10,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.tum.os.sa.client.IShowcaseService;
-import de.tum.os.sa.shared.Command;
 import de.tum.os.sa.shared.CommandType;
 import de.tum.os.sa.shared.DeviceType;
 import de.tum.os.sa.shared.MediaTypes;
 import de.tum.os.sa.shared.DTO.Event;
 import de.tum.os.sa.shared.DTO.Media;
 import de.tum.os.sa.shared.DTO.PlaybackDevice;
+import de.tum.os.sa.shared.commands.Command;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -316,11 +316,26 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	@Override
 	public Boolean startEvent(Event event) {
 		return startEvent(event.getEventId());
+
+		/*
+		 * Send Play command including the EventID the command pertains to, the Android Clients 
+		 * will ask for the media in that
+		 * particular event that is theirs to display.
+		 * 
+		 * Similarly to getEventForDevice make a method getMediaForDeviceInEvent(deviceID, eventId) 
+		 * that returns all the media that is
+		 * mapped to a device in a certain event.
+		 * 
+		 * This will be useful in the long term when a device could be used in multiple events 
+		 * only one of which is active at one
+		 * moment in time
+		 */
+
 	}
 
 	@Override
 	public Boolean startEvent(String eventID) {
-		final Command playCommand = new Command(CommandType.play);
+		final Command playCommand = new Command(CommandType.play, "");
 		for (final String clientID : this.clientIDToSocketMap.keySet()) {
 			conManager.sendCommandAsync(playCommand, clientID);
 		}
@@ -334,7 +349,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Boolean pauseEvent(String eventID) {
-		final Command pauseCommand = new Command(CommandType.pause);
+		final Command pauseCommand = new Command(CommandType.pause, "");
 		for (final String clientID : this.clientIDToSocketMap.keySet()) {
 			conManager.sendCommandAsync(pauseCommand, clientID);
 		}
@@ -348,7 +363,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Boolean stopEvent(String eventID) {
-		final Command stopCommand = new Command(CommandType.stop);
+		final Command stopCommand = new Command(CommandType.stop, "");
 		for (final String clientID : this.clientIDToSocketMap.keySet()) {
 			conManager.sendCommandAsync(stopCommand, clientID);
 		}
