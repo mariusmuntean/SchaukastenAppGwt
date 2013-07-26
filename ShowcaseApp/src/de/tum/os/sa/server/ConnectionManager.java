@@ -7,6 +7,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.tum.os.sa.shared.commands.Command;
 
+
+/**
+ * Manages open connections to Android Clients.
+ * 
+ * <br>Keeps them open by periodically sending heartbeat-messages</br>.
+ * 
+ * <p>Opens ObjectOutputStreams to clients.</p>
+ * 
+ * <br>Sends commands ({@link Command}) asynchronously to Android Clients.</br>
+ * 
+ * @author Marius
+ *
+ */
 public class ConnectionManager {
 
 	private ConcurrentHashMap<String, Socket> clientsIdToSocketMap;

@@ -6,6 +6,14 @@ import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 
+ * Listens for Android Clients to connect and adds them in a mapping (from
+ * client ID to socket).
+ * 
+ * @author marius
+ * 
+ */
 public class ClientListener extends Thread {
 
 	private ServerSocket serverSocket;
@@ -37,7 +45,8 @@ public class ClientListener extends Thread {
 			UUID clientID = UUID.randomUUID();
 			clientIdToSocketMap.put(clientID.toString(), clientSocket);
 			try {
-				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+				PrintWriter out = new PrintWriter(
+						clientSocket.getOutputStream(), true);
 				out.println(clientID.toString());
 			} catch (Exception e) {
 				System.out.println("Could not greet client! !");
@@ -47,10 +56,11 @@ public class ClientListener extends Thread {
 	}
 
 	/**
-	 * Tries to start listening for connections. If start is successful a thread safe mapping of client IDs to their socket connection
-	 * is returned.
+	 * Tries to start listening for connections. If start is successful a thread
+	 * safe mapping of client IDs to their socket connection is returned.
 	 * 
-	 * @return - A client IDs to Socket mapping if start was successful, null otherwise.
+	 * @return - A client IDs to Socket mapping if start was successful, null
+	 *         otherwise.
 	 */
 	public ConcurrentHashMap<String, Socket> startAndGetClientIdsMap() {
 		try {

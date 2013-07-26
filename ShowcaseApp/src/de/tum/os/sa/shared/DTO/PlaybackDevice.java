@@ -1,8 +1,5 @@
 package de.tum.os.sa.shared.DTO;
 
-import java.io.Serializable;
-import java.util.UUID;
-
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import de.tum.os.sa.shared.DeviceType;

@@ -4,27 +4,35 @@ import java.io.Serializable;
 
 import de.tum.os.sa.shared.CommandType;
 
-public class Command implements Serializable{
+/**
+ * Upon receiving a Command instance, based on its actual type, the Android
+ * clients will behave in a certain manner. Base class for all commands.
+ * 
+ * @author marius
+ * 
+ */
+public class Command implements Serializable {
 
 	private static final long serialVersionUID = 386856547368991499L;
 	private CommandType commandType;
 	private String eventId;
-	
+
 	/**
 	 * Empty constructor for serialization.
 	 */
-	public Command(){
+	public Command() {
 	}
-	
-	public Command(CommandType commandType, String eventId){
+
+	public Command(CommandType commandType, String eventId) {
 		this.commandType = commandType;
 		this.eventId = eventId;
 	}
-	public CommandType getCommandType(){
+
+	public CommandType getCommandType() {
 		return this.commandType;
 	}
-	
-	public String getEventId(){
+
+	public String getEventId() {
 		return this.eventId;
 	}
 }
