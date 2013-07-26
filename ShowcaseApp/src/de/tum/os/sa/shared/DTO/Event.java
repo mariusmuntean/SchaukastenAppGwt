@@ -9,8 +9,8 @@ import java.util.HashSet;
 import de.tum.os.sa.shared.EventState;
 
 /**
- * DTO Representing an Event. Multiple devices are in an event, 
- * each playing back none, one or multiple Media files.
+ * DTO Representing an Event. Multiple devices are in an event, each playing
+ * back none, one or multiple Media files.
  * 
  * @author Marius
  * 
@@ -42,6 +42,45 @@ public class Event implements Serializable {
 	}
 
 	/**
+	 * Searches for a device in this event.
+	 * 
+	 * @param playbackDevice
+	 *            - The device to search for.
+	 * @return - true if the given device is in this event, false otherwise.
+	 */
+	public Boolean containsDevice(PlaybackDevice playbackDevice) {
+		if (this.eventMediaToDeviceMapping == null) {
+			return false;
+		}
+
+		return this.eventMediaToDeviceMapping.containsKey(playbackDevice);
+	}
+
+	/**
+	 * Searches for a device in this event.
+	 * 
+	 * @param deviceID
+	 *            - The ID of the device to search for.
+	 * @return - true if a device with the given ID is in this event, false
+	 *         otherwise.
+	 */
+	public Boolean containsDeviceId(String deviceID) {
+		if (this.eventMediaToDeviceMapping == null) {
+			return false;
+		}
+
+		Boolean result = false;
+		for (PlaybackDevice pd : this.eventMediaToDeviceMapping.keySet()) {
+			if (pd.getDeviceId().equals(deviceID)) {
+				result = true;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * @return the eventPictureUrl
 	 */
 	public String getEventPictureUrl() {
@@ -49,7 +88,8 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * @param eventPictureUrl the eventPictureUrl to set
+	 * @param eventPictureUrl
+	 *            the eventPictureUrl to set
 	 */
 	public void setEventPictureUrl(String eventPictureUrl) {
 		this.eventPictureUrl = eventPictureUrl;
@@ -63,7 +103,8 @@ public class Event implements Serializable {
 	}
 
 	/**
-	 * @param eventState the eventState to set
+	 * @param eventState
+	 *            the eventState to set
 	 */
 	public void setEventState(EventState eventState) {
 		this.eventState = eventState;
@@ -140,9 +181,11 @@ public class Event implements Serializable {
 	 */
 	public ArrayList<Media> getEventMedia() {
 		if (eventMediaToDeviceMapping != null) {
-			Collection<ArrayList<Media>> mediaLists = eventMediaToDeviceMapping.values();
+			Collection<ArrayList<Media>> mediaLists = eventMediaToDeviceMapping
+					.values();
 			HashSet<Media> media = new HashSet<Media>();
-			// Adding all Media to a set guarantees us that each Media element is present only once.
+			// Adding all Media to a set guarantees us that each Media element
+			// is present only once.
 			for (ArrayList<Media> mediaList : mediaLists) {
 				if (mediaList != null && mediaList.size() > 0) {
 					media.addAll(mediaList);
@@ -159,7 +202,8 @@ public class Event implements Serializable {
 	 */
 	public ArrayList<PlaybackDevice> getEventDevices() {
 		if (eventMediaToDeviceMapping != null) {
-			return new ArrayList<PlaybackDevice>(eventMediaToDeviceMapping.keySet());
+			return new ArrayList<PlaybackDevice>(
+					eventMediaToDeviceMapping.keySet());
 		} else {
 			return null;
 		}

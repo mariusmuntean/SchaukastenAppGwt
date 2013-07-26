@@ -59,4 +59,13 @@ public interface IShowcaseServiceAsync {
 	void pauseEvent(String eventID, AsyncCallback<Boolean> callback);
 
 	void startEvent(String eventID, AsyncCallback<Boolean> callback);
+
+	void getMediaForDeviceInEvent(String deviceID, String eventID,
+			AsyncCallback<ArrayList<Media>> callback);
+
+	void mapMediaToDevicesForEvent(String eventId,
+			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping,
+			AsyncCallback<Boolean> callback);
+
+	void getDevice(String deviceId, AsyncCallback<PlaybackDevice> callback);
 }

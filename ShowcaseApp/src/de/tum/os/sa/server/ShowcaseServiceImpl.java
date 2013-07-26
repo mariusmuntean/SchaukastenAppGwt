@@ -1,8 +1,5 @@
 package de.tum.os.sa.server;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +20,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 /**
  * The server side implementation of the RPC service.
  */
-public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowcaseService {
+public class ShowcaseServiceImpl extends RemoteServiceServlet implements
+		IShowcaseService {
 
 	/**
 	 * 
@@ -56,12 +54,12 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	}
 
 	private void generateDummyDevices() {
-		PlaybackDevice pd1 = new PlaybackDevice(UUID.randomUUID().toString(), "Nexus S",
-				DeviceType.Smartphone, 3.7f);
-		PlaybackDevice pd2 = new PlaybackDevice(UUID.randomUUID().toString(), "Nexus S",
-				DeviceType.Smartphone, 3.7f);
-		PlaybackDevice pd3 = new PlaybackDevice(UUID.randomUUID().toString(), "Nexus 4",
-				DeviceType.Smartphone, 4.5f);
+		PlaybackDevice pd1 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus S", DeviceType.Smartphone, 3.7f);
+		PlaybackDevice pd2 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus S", DeviceType.Smartphone, 3.7f);
+		PlaybackDevice pd3 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus 4", DeviceType.Smartphone, 4.5f);
 		PlaybackDevice pd4 = new PlaybackDevice(UUID.randomUUID().toString(),
 				"Galaxy Nexus", DeviceType.Smartphone, 4.5f);
 		registeredDevices.add(pd1);
@@ -113,15 +111,18 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		 * Event 1
 		 */
 		// Media in this event
-		final ArrayList<Media> careerTumMediaList = new ArrayList<Media>(media.subList(0,
-				2));
+		final ArrayList<Media> careerTumMediaList = new ArrayList<Media>(
+				media.subList(0, 2));
 		// Map media to devices in this event
 		HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
-		// mediaToDeviceMapping.put(registeredDevices.get(0), new ArrayList<Media>(
+		// mediaToDeviceMapping.put(registeredDevices.get(0), new
+		// ArrayList<Media>(
 		// careerTumMediaList.subList(0, 0)));
-		// mediaToDeviceMapping.put(registeredDevices.get(1), new ArrayList<Media>(
+		// mediaToDeviceMapping.put(registeredDevices.get(1), new
+		// ArrayList<Media>(
 		// careerTumMediaList.subList(1, 1)));
-		// mediaToDeviceMapping.put(registeredDevices.get(2), new ArrayList<Media>(
+		// mediaToDeviceMapping.put(registeredDevices.get(2), new
+		// ArrayList<Media>(
 		// careerTumMediaList.subList(2, 2)));
 
 		// Create the event
@@ -144,13 +145,14 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 				media.subList(3, 4));
 		// Map media to devices in this event
 		HashMap<PlaybackDevice, ArrayList<Media>> demoMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
-		demoMediaToDeviceMapping.put(registeredDevices.get(2), new ArrayList<Media>(
-				demoTumMediaList.subList(0, 0)));
-		demoMediaToDeviceMapping.put(registeredDevices.get(3), new ArrayList<Media>(
-				demoTumMediaList.subList(1, 1)));
+		demoMediaToDeviceMapping.put(registeredDevices.get(2),
+				new ArrayList<Media>(demoTumMediaList.subList(0, 0)));
+		demoMediaToDeviceMapping.put(registeredDevices.get(3),
+				new ArrayList<Media>(demoTumMediaList.subList(1, 1)));
 
 		// Create the event
-		Event ev2 = new Event("Demo TUM", "14716433728342", "It's a demo event!",
+		Event ev2 = new Event("Demo TUM", "14716433728342",
+				"It's a demo event!",
 				"Garching Forschungszentrum, Bolzman Str 3");
 		// Add mapping
 		ev2.setEventMediaToDeviceMapping(demoMediaToDeviceMapping);
@@ -163,7 +165,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	}
 
 	/**
-	 * Escape an html string. Escaping data received from the client helps to prevent cross-site script vulnerabilities.
+	 * Escape an html string. Escaping data received from the client helps to
+	 * prevent cross-site script vulnerabilities.
 	 * 
 	 * @param html
 	 *            the html string to escape
@@ -177,6 +180,10 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 				.replaceAll(">", "&gt;");
 	}
 
+	/*
+	 * Methods for web clients
+	 */
+
 	@Override
 	public ArrayList<PlaybackDevice> getAllDevices() {
 		return this.registeredDevices;
@@ -184,13 +191,26 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public ArrayList<PlaybackDevice> getAvailableDevices() {
-		return null;
+		ArrayList<PlaybackDevice> result = new ArrayList<PlaybackDevice>();
+		for (PlaybackDevice pd : registeredDevices) {
+			if (pd.isAvailable()) {
+				result.add(pd);
+			}
+		}
+
+		return result;
 	}
 
 	@Override
 	public ArrayList<PlaybackDevice> getUnavailableDevices() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<PlaybackDevice> result = new ArrayList<PlaybackDevice>();
+		for (PlaybackDevice pd : registeredDevices) {
+			if (!pd.isAvailable()) {
+				result.add(pd);
+			}
+		}
+
+		return result;
 	}
 
 	@Override
@@ -207,13 +227,18 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Event getEventForDevice(String deviceId) {
-		// TODO Auto-generated method stub
-		return null;
+		Event result = null;
+		for (Event ev : events) {
+			if (ev.containsDeviceId(deviceId)) {
+				result = ev;
+				break;
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public Boolean addEvent(Event event) {
-		// TODO Auto-generated method stub
 		if (event != null) {
 			events.add(event);
 			return true;
@@ -234,58 +259,22 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 
 	@Override
 	public Boolean deleteEvent(String eventId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean registerDevice(PlaybackDevice device) {
-		/*
-		 * Protocol: first the device connects to the serverSocket, if that is successful the device is added to the
-		 * clientIDToSocketMap and it tries to call this method. Here I'm adding devices to the clientIDToDeviceMap but only those that
-		 * have successfully been added to clientIDToSocketMap
-		 */
-		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
-			clientIDToDeviceMap.put(device.getDeviceId(), device);
-			System.out.println("Registered: " + device.toString());
-			return new Boolean(true);
-		} else {
-			System.out.println("Unauthorized call to registerDevice: "
-					+ device.toString());
-			return new Boolean(false);
+		if (eventId == null || eventId.isEmpty()) {
+			return false;
 		}
-	}
-
-	@Override
-	public Boolean unregisterDevice(PlaybackDevice device) {
-		/*
-		 * Protocol: when a device has to be removed from the Schaukasten it has the option to inform the server that it will become
-		 * unavailable(to avoid confusion). First I check if the device that want's to leave the event was registered in the first
-		 * place.
-		 */
-		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
-			clientIDToSocketMap.remove(device.getDeviceId());
-			clientIDToDeviceMap.remove(device.getDeviceId());
-			System.out.println("Deregistered: " + device.toString());
-			return new Boolean(true);
-		} else {
-			System.out.println("Unauthorized call to unregisterDevice: "
-					+ device.toString());
-			return new Boolean(false);
+		Event event = null;
+		for (Event ev : events) {
+			if (ev.getEventId().equals(eventId)) {
+				event = ev;
+				break;
+			}
 		}
 
-	}
+		if (event == null) {
+			return false;
+		}
 
-	@Override
-	public Boolean markAvailable(PlaybackDevice device) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean markUnavailable(PlaybackDevice device) {
-		// TODO Auto-generated method stub
-		return null;
+		return deleteEvent(event);
 	}
 
 	@Override
@@ -309,8 +298,26 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 	@Override
 	public Boolean mapMediaToDevicesForEvent(Event event,
 			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
-		// TODO Auto-generated method stub
-		return null;
+		if (event == null || mediaToDeviceMapping == null) {
+			return false;
+		}
+
+		if (!events.contains(event)) {
+			return false;
+		}
+
+		event.setEventMediaToDeviceMapping(mediaToDeviceMapping);
+		return true;
+	}
+
+	@Override
+	public Boolean mapMediaToDevicesForEvent(String eventId,
+			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
+		Event ev = getEvent(eventId);
+		if (ev == null) {
+			return false;
+		}
+		return mapMediaToDevicesForEvent(ev, mediaToDeviceMapping);
 	}
 
 	@Override
@@ -318,17 +325,15 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 		return startEvent(event.getEventId());
 
 		/*
-		 * Send Play command including the EventID the command pertains to, the Android Clients 
-		 * will ask for the media in that
-		 * particular event that is theirs to display.
+		 * Send Play command including the EventID, the Android Clients will ask
+		 * for the media in that particular event that is theirs to display.
 		 * 
-		 * Similarly to getEventForDevice make a method getMediaForDeviceInEvent(deviceID, eventId) 
-		 * that returns all the media that is
-		 * mapped to a device in a certain event.
+		 * Similarly to getEventForDevice make a method
+		 * getMediaForDeviceInEvent(deviceID, eventId) that returns all the
+		 * media that is mapped to a device in a certain event.
 		 * 
-		 * This will be useful in the long term when a device could be used in multiple events 
-		 * only one of which is active at one
-		 * moment in time
+		 * This will be useful in the long term when a device could be used in
+		 * multiple events only one of which is active at one moment in time
 		 */
 
 	}
@@ -368,6 +373,132 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements IShowca
 			conManager.sendCommandAsync(stopCommand, clientID);
 		}
 		return true;
+	}
+
+	/*
+	 * Methods for Android Clients
+	 */
+
+	@Override
+	public Boolean registerDevice(PlaybackDevice device) {
+		/*
+		 * Protocol: first the device connects to the serverSocket, if that is
+		 * successful the device is added to the clientIDToSocketMap and it
+		 * tries to call this method. Here I'm adding devices to the
+		 * clientIDToDeviceMap but only those that have successfully been added
+		 * to clientIDToSocketMap
+		 */
+		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
+			clientIDToDeviceMap.put(device.getDeviceId(), device);
+			System.out.println("Registered: " + device.toString());
+			return new Boolean(true);
+		} else {
+			System.out.println("Unauthorized call to registerDevice: "
+					+ device.toString());
+			return new Boolean(false);
+		}
+	}
+
+	@Override
+	public Boolean unregisterDevice(PlaybackDevice device) {
+		/*
+		 * Protocol: when a device has to be removed from the Schaukasten it has
+		 * the option to inform the server that it will become unavailable(to
+		 * avoid confusion). First I check if the device that want's to leave
+		 * the event was registered in the first place.
+		 */
+		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
+			clientIDToSocketMap.remove(device.getDeviceId());
+			clientIDToDeviceMap.remove(device.getDeviceId());
+			System.out.println("Deregistered: " + device.toString());
+			return new Boolean(true);
+		} else {
+			System.out.println("Unauthorized call to unregisterDevice: "
+					+ device.toString());
+			return new Boolean(false);
+		}
+
+	}
+
+	@Override
+	public PlaybackDevice getDevice(String deviceId) {
+		if (deviceId == null || deviceId.isEmpty()) {
+			return null;
+		}
+
+		PlaybackDevice result = null;
+		for (PlaybackDevice pd : registeredDevices) {
+			if (pd.getDeviceId().equals(deviceId)) {
+				result = pd;
+				break;
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public Boolean markAvailable(PlaybackDevice device) {
+		// Make sure the device is actually registered
+		if (getDevice(device.getDeviceId()) == null) {
+			return false;
+		}
+		device.setAvailable(true);
+		return true;
+	}
+
+	@Override
+	public Boolean markUnavailable(PlaybackDevice device) {
+		// Make sure the device is actually registered
+		if (getDevice(device.getDeviceId()) == null) {
+			return false;
+		}
+		device.setAvailable(false);
+		return true;
+	}
+
+	@Override
+	public ArrayList<Media> getMediaForDeviceInEvent(String deviceID,
+			String eventID) {
+		// Sanitize code
+		if (deviceID == null || deviceID.isEmpty() || eventID == null
+				|| eventID.isEmpty()) {
+			return null;
+		}
+
+		// Search for an event with the given event ID
+		Event event = null;
+		for (Event ev : events) {
+			if (ev.getEventId().equals(eventID)) {
+				event = ev;
+				break;
+			}
+		}
+		if (event == null) {
+			return null;
+		}
+
+		// Search for a device in the event that has the given device ID
+		ArrayList<PlaybackDevice> eventDevices = event.getEventDevices();
+		if (eventDevices == null || eventDevices.size() == 0) {
+			return null;
+		}
+
+		PlaybackDevice playbackDevice = null;
+		for (PlaybackDevice pb : eventDevices) {
+			if (pb.getDeviceId().equals(deviceID)) {
+				playbackDevice = pb;
+				break;
+			}
+		}
+		if (playbackDevice == null) {
+			return null;
+		}
+
+		ArrayList<Media> result = event.getEventMediaToDeviceMapping().get(
+				playbackDevice);
+
+		return result; // result could still be null so when calling this method
+						// check the result.
 	}
 
 }
