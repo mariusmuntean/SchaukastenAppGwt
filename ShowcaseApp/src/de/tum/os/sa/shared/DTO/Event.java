@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 import de.tum.os.sa.shared.EventState;
 
@@ -15,16 +21,23 @@ import de.tum.os.sa.shared.EventState;
  * @author Marius
  * 
  */
-public class Event implements Serializable {
+@Entity
+public class Event implements Serializable, IsSerializable {
 
 	String eventName;
+	@Id
 	String eventId;
 	String eventDescription;
 	String eventLocation;
 	String eventPictureUrl;
-	ArrayList<Media> eventMedia;
-	ArrayList<PlaybackDevice> eventDevices;
-	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping;
+	
+//	@ElementCollection
+//	List<Media> eventMedia;
+//	
+//	@ElementCollection
+//	List<PlaybackDevice> eventDevices;
+	
+	Map<PlaybackDevice, List<Media>> eventMediaToDeviceMapping;
 	EventState eventState;
 
 	// Empty constructor for serialization.
@@ -113,7 +126,7 @@ public class Event implements Serializable {
 	/**
 	 * @return the eventMediaToDeviceMapping
 	 */
-	public HashMap<PlaybackDevice, ArrayList<Media>> getEventMediaToDeviceMapping() {
+	public Map<PlaybackDevice, List<Media>> getEventMediaToDeviceMapping() {
 		return eventMediaToDeviceMapping;
 	}
 
@@ -122,7 +135,7 @@ public class Event implements Serializable {
 	 *            the eventMediaToDeviceMapping to set
 	 */
 	public void setEventMediaToDeviceMapping(
-			HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping) {
+			HashMap<PlaybackDevice, List<Media>> eventMediaToDeviceMapping) {
 		this.eventMediaToDeviceMapping = eventMediaToDeviceMapping;
 	}
 
@@ -181,12 +194,11 @@ public class Event implements Serializable {
 	 */
 	public ArrayList<Media> getEventMedia() {
 		if (eventMediaToDeviceMapping != null) {
-			Collection<ArrayList<Media>> mediaLists = eventMediaToDeviceMapping
-					.values();
+			Collection<List<Media>> mediaLists = eventMediaToDeviceMapping.values();
 			HashSet<Media> media = new HashSet<Media>();
 			// Adding all Media to a set guarantees us that each Media element
 			// is present only once.
-			for (ArrayList<Media> mediaList : mediaLists) {
+			for (List<Media> mediaList : mediaLists) {
 				if (mediaList != null && mediaList.size() > 0) {
 					media.addAll(mediaList);
 				}
@@ -200,7 +212,7 @@ public class Event implements Serializable {
 	/**
 	 * @return the Devices in this event or null if there are none.
 	 */
-	public ArrayList<PlaybackDevice> getEventDevices() {
+	public List<PlaybackDevice> getEventDevices() {
 		if (eventMediaToDeviceMapping != null) {
 			return new ArrayList<PlaybackDevice>(
 					eventMediaToDeviceMapping.keySet());

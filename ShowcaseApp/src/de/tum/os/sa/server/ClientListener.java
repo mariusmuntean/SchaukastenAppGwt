@@ -19,11 +19,6 @@ public class ClientListener extends Thread {
 	private ServerSocket serverSocket;
 	private ConcurrentHashMap<String, Socket> clientIdToSocketMap = new ConcurrentHashMap<String, Socket>();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Thread#run()
-	 */
 	@Override
 	public void run() {
 		try {
@@ -39,6 +34,7 @@ public class ClientListener extends Thread {
 				clientSocket = serverSocket.accept();
 			} catch (Exception e) {
 				System.out.println("Error accepting client!!!");
+				e.printStackTrace();
 				return;
 			}
 

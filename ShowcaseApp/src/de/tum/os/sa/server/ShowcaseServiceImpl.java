@@ -3,8 +3,14 @@ package de.tum.os.sa.server;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
 
 import de.tum.os.sa.client.IShowcaseService;
 import de.tum.os.sa.shared.CommandType;
@@ -23,20 +29,24 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		IShowcaseService {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2798669587684922962L;
 	private ArrayList<PlaybackDevice> registeredDevices = new ArrayList<PlaybackDevice>();
 	private ArrayList<PlaybackDevice> availableDevices = new ArrayList<PlaybackDevice>();
 	private ArrayList<PlaybackDevice> unavailableDevices = new ArrayList<PlaybackDevice>();
 	private ArrayList<Media> media = new ArrayList<Media>();
-	private ArrayList<Event> events = new ArrayList<Event>();
+	private List<Event> events = new ArrayList<Event>();
 
 	private ClientListener clientListen;
 	private ConnectionManager conManager;
 	private ConcurrentHashMap<String, Socket> clientIDToSocketMap;
 	private ConcurrentHashMap<String, PlaybackDevice> clientIDToDeviceMap;
+	
+	/*
+	 * Persistence stuff here
+	 */
+	public static final String persistence_unit_name = "showcase";
+	EntityManagerFactory emf;
+	EntityManager em;
 
 	public ShowcaseServiceImpl() {
 		super();
@@ -50,7 +60,27 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		this.clientIDToSocketMap = clientListen.startAndGetClientIdsMap();
 		conManager = new ConnectionManager(this.clientIDToSocketMap);
 		clientIDToDeviceMap = new ConcurrentHashMap<String, PlaybackDevice>();
+		
+		/*
+		 * Persistence stuff here
+		 */
+		emf = Persistence.createEntityManagerFactory(persistence_unit_name);
+		em = emf.createEntityManager();
+		
+		//Dummy persist here
+		em.getTransaction().begin();
+		em.persist(events.get(0));
+		em.persist(events.get(1));
 
+		em.getTransaction().commit();
+		
+		events.clear();
+		events = getAllEvents();
+	}
+	
+	@Override
+	protected void checkPermutationStrongName() throws SecurityException {
+		return;
 	}
 
 	private void generateDummyDevices() {
@@ -114,7 +144,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		final ArrayList<Media> careerTumMediaList = new ArrayList<Media>(
 				media.subList(0, 2));
 		// Map media to devices in this event
-		HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
+		HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping = new HashMap<PlaybackDevice, List<Media>>();
 		// mediaToDeviceMapping.put(registeredDevices.get(0), new
 		// ArrayList<Media>(
 		// careerTumMediaList.subList(0, 0)));
@@ -137,6 +167,10 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		// Add the event to the list
 		events.add(ev1);
 
+		
+
+		
+		
 		/*
 		 * Event 2
 		 */
@@ -144,14 +178,14 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		final ArrayList<Media> demoTumMediaList = new ArrayList<Media>(
 				media.subList(3, 4));
 		// Map media to devices in this event
-		HashMap<PlaybackDevice, ArrayList<Media>> demoMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
-		demoMediaToDeviceMapping.put(registeredDevices.get(2),
-				new ArrayList<Media>(demoTumMediaList.subList(0, 0)));
+		HashMap<PlaybackDevice, List<Media>> demoMediaToDeviceMapping = new HashMap<PlaybackDevice, List<Media>>();
+
 		demoMediaToDeviceMapping.put(registeredDevices.get(3),
 				new ArrayList<Media>(demoTumMediaList.subList(1, 1)));
-
+		demoMediaToDeviceMapping.put(registeredDevices.get(2),
+				new ArrayList<Media>(demoTumMediaList.subList(0, 0)));
 		// Create the event
-		Event ev2 = new Event("Demo TUM", "14716433728342",
+		Event ev2 = new Event("Demo TUM", "14716446728347",
 				"It's a demo event!",
 				"Garching Forschungszentrum, Bolzman Str 3");
 		// Add mapping
@@ -291,13 +325,16 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public ArrayList<Event> getAllEvents() {
-		// TODO Auto-generated method stub
-		return events;
+		Query getEventsQuery = em.createQuery("select ev from Event ev");
+		
+		ArrayList<Event> eventsResult = new ArrayList<Event>(getEventsQuery.getResultList());
+		
+		return eventsResult;
 	}
 
 	@Override
 	public Boolean mapMediaToDevicesForEvent(Event event,
-			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
+			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping) {
 		if (event == null || mediaToDeviceMapping == null) {
 			return false;
 		}
@@ -312,7 +349,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public Boolean mapMediaToDevicesForEvent(String eventId,
-			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
+			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping) {
 		Event ev = getEvent(eventId);
 		if (ev == null) {
 			return false;
@@ -404,7 +441,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		/*
 		 * Protocol: when a device has to be removed from the Schaukasten it has
 		 * the option to inform the server that it will become unavailable(to
-		 * avoid confusion). First I check if the device that want's to leave
+		 * avoid confusion). First I check if the device that wants to leave
 		 * the event was registered in the first place.
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
@@ -457,7 +494,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public ArrayList<Media> getMediaForDeviceInEvent(String deviceID,
+	public List<Media> getMediaForDeviceInEvent(String deviceID,
 			String eventID) {
 		// Sanitize code
 		if (deviceID == null || deviceID.isEmpty() || eventID == null
@@ -478,7 +515,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		}
 
 		// Search for a device in the event that has the given device ID
-		ArrayList<PlaybackDevice> eventDevices = event.getEventDevices();
+		List<PlaybackDevice> eventDevices = event.getEventDevices();
 		if (eventDevices == null || eventDevices.size() == 0) {
 			return null;
 		}
@@ -494,7 +531,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 			return null;
 		}
 
-		ArrayList<Media> result = event.getEventMediaToDeviceMapping().get(
+		List<Media> result = event.getEventMediaToDeviceMapping().get(
 				playbackDevice);
 
 		return result; // result could still be null so when calling this method

@@ -11,7 +11,7 @@ import de.tum.os.sa.shared.commands.Command;
 /**
  * Manages open connections to Android Clients.
  * 
- * <br>Keeps them open by periodically sending heartbeat-messages</br>.
+ * <br>Keeps them open by periodically sending heartbeat-messages.</br>
  * 
  * <p>Opens ObjectOutputStreams to clients.</p>
  * 

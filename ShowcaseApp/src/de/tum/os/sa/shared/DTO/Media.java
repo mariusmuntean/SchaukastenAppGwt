@@ -2,6 +2,14 @@ package de.tum.os.sa.shared.DTO;
 
 import java.io.Serializable;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 import de.tum.os.sa.shared.MediaTypes;
 
 /**
@@ -10,16 +18,18 @@ import de.tum.os.sa.shared.MediaTypes;
  * @author Marius
  * 
  */
-public class Media implements Serializable{
+public class Media implements Serializable, IsSerializable{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -9112586033216435998L;
 	String name;
+
 	String id;
 	String description;
 	String location;
+
 	MediaTypes type;
 
 	// Empty constructor for serialization.

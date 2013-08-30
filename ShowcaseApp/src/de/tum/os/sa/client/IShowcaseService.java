@@ -2,6 +2,7 @@ package de.tum.os.sa.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -69,10 +70,10 @@ public interface IShowcaseService extends RemoteService {
 	Boolean deleteEvent(String eventId);
 
 	Boolean mapMediaToDevicesForEvent(Event event,
-			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping);
+			HashMap<PlaybackDevice,List<Media>> mediaToDeviceMapping);
 	
 	Boolean mapMediaToDevicesForEvent(String eventId,
-			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping);
+			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping);
 
 	Boolean startEvent(Event event);
 
@@ -137,5 +138,5 @@ public interface IShowcaseService extends RemoteService {
 	 *            - The event ID.
 	 * @return - An {@code ArrayListy<Media> 
 	 */
-	ArrayList<Media> getMediaForDeviceInEvent(String deviceID, String eventID);
+	List<Media> getMediaForDeviceInEvent(String deviceID, String eventID);
 }

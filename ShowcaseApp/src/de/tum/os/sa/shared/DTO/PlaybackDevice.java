@@ -1,5 +1,7 @@
 package de.tum.os.sa.shared.DTO;
 
+import java.io.Serializable;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import de.tum.os.sa.shared.DeviceType;
@@ -10,9 +12,13 @@ import de.tum.os.sa.shared.DeviceType;
  * @author Marius
  * 
  */
-public class PlaybackDevice implements IsSerializable {
+public class PlaybackDevice implements IsSerializable, Serializable {
 
-	private static final long serialVersionUID = -7400252057363893777L;
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2109990224769622746L;
 	private String deviceId;
 	private String deviceIp;
 	private Float screenSize;
@@ -21,10 +27,10 @@ public class PlaybackDevice implements IsSerializable {
 //	private DeviceType deviceType;
 	private Event parentEvent;
 
-	// Empty constructor for serialization
-	public PlaybackDevice() {
+	public PlaybackDevice(){
+		
 	}
-
+	
 	/**
 	 * Creates a new instance of PlaybackDevice
 	 * 
@@ -42,6 +48,8 @@ public class PlaybackDevice implements IsSerializable {
 
 		this.isAvailable = true;
 	}
+	
+
 
 	public String getDeviceIp() {
 		return deviceIp;

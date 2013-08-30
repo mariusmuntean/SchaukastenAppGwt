@@ -2,6 +2,8 @@ package de.tum.os.sa.client.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
@@ -93,8 +95,8 @@ public class DisplayableEvent extends BaseModelData {
 		return get(eventDevices);
 	}
 
-	public void setDevices(ArrayList<PlaybackDevice> newDevices) {
-		set(eventDevices, newDevices);
+	public void setDevices(List<PlaybackDevice> list) {
+		set(eventDevices, list);
 	}
 
 	public EventState getState() {
@@ -110,7 +112,7 @@ public class DisplayableEvent extends BaseModelData {
 	}
 
 	public void setMediaToDeviceMapping(
-			HashMap<PlaybackDevice, ArrayList<Media>> newMapping) {
+			Map<PlaybackDevice, List<Media>> newMapping) {
 		set(eventMediaToDevicesMap, newMapping);
 	}
 }

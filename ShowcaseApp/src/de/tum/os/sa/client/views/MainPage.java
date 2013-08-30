@@ -61,6 +61,8 @@ public class MainPage extends Composite {
 	
 	@UiField(provided=true)
 	EventWidget eventWidget;
+	
+//	FileUpload
 
 	/*
 	 * Stores region

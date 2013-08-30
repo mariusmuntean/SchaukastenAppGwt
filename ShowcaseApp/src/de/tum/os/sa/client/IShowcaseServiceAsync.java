@@ -2,6 +2,7 @@ package de.tum.os.sa.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -61,10 +62,10 @@ public interface IShowcaseServiceAsync {
 	void startEvent(String eventID, AsyncCallback<Boolean> callback);
 
 	void getMediaForDeviceInEvent(String deviceID, String eventID,
-			AsyncCallback<ArrayList<Media>> callback);
+			AsyncCallback<List<Media>> callback);
 
 	void mapMediaToDevicesForEvent(String eventId,
-			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping,
+			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping,
 			AsyncCallback<Boolean> callback);
 
 	void getDevice(String deviceId, AsyncCallback<PlaybackDevice> callback);
