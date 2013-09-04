@@ -13,6 +13,7 @@ import javax.persistence.Persistence;
 import javax.persistence.Query;
 
 import de.tum.os.sa.client.IShowcaseService;
+import de.tum.os.sa.server.helpers.FSHelper;
 import de.tum.os.sa.shared.CommandType;
 import de.tum.os.sa.shared.DeviceType;
 import de.tum.os.sa.shared.MediaTypes;
@@ -40,7 +41,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	private ConnectionManager conManager;
 	private ConcurrentHashMap<String, Socket> clientIDToSocketMap;
 	private ConcurrentHashMap<String, PlaybackDevice> clientIDToDeviceMap;
-	
+
 	/*
 	 * Persistence stuff here
 	 */
@@ -60,27 +61,76 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		this.clientIDToSocketMap = clientListen.startAndGetClientIdsMap();
 		conManager = new ConnectionManager(this.clientIDToSocketMap);
 		clientIDToDeviceMap = new ConcurrentHashMap<String, PlaybackDevice>();
-		
+
 		/*
 		 * Persistence stuff here
 		 */
 		emf = Persistence.createEntityManagerFactory(persistence_unit_name);
 		em = emf.createEntityManager();
-		
-		//Dummy persist here
+
+		// Dummy persist here
 		em.getTransaction().begin();
+
 		em.persist(events.get(0));
 		em.persist(events.get(1));
 
 		em.getTransaction().commit();
-		
+
 		events.clear();
 		events = getAllEvents();
+
+		FSHelper fsHelper = new FSHelper();
+		fsHelper.createFolderStructure(false);
 	}
-	
+
 	@Override
 	protected void checkPermutationStrongName() throws SecurityException {
 		return;
+	}
+
+	private String persistObject(Object obj) {
+		String result = "ok";
+		try {
+			em.getTransaction().begin();
+
+			em.persist(obj);
+
+			em.getTransaction().commit();
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
+		System.out.println("SERVER persistObject() result: " + result);
+		return result;
+	}
+
+	private String updateObject(Object obj) {
+		String result = "ok";
+		try {
+			em.getTransaction().begin();
+
+			em.merge(obj);
+
+			em.getTransaction().commit();
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
+		System.out.println("SERVER persistObject() result: " + result);
+		return result;
+	}
+
+	private String deleteObject(Object obj) {
+		String result = "ok";
+		try {
+			em.getTransaction().begin();
+
+			em.remove(obj);
+
+			em.getTransaction().commit();
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
+		System.out.println("SERVER persistObject() result: " + result);
+		return result;
 	}
 
 	private void generateDummyDevices() {
@@ -144,7 +194,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		final ArrayList<Media> careerTumMediaList = new ArrayList<Media>(
 				media.subList(0, 2));
 		// Map media to devices in this event
-		HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping = new HashMap<PlaybackDevice, List<Media>>();
+		HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 		// mediaToDeviceMapping.put(registeredDevices.get(0), new
 		// ArrayList<Media>(
 		// careerTumMediaList.subList(0, 0)));
@@ -167,10 +217,6 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		// Add the event to the list
 		events.add(ev1);
 
-		
-
-		
-		
 		/*
 		 * Event 2
 		 */
@@ -178,7 +224,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		final ArrayList<Media> demoTumMediaList = new ArrayList<Media>(
 				media.subList(3, 4));
 		// Map media to devices in this event
-		HashMap<PlaybackDevice, List<Media>> demoMediaToDeviceMapping = new HashMap<PlaybackDevice, List<Media>>();
+		HashMap<PlaybackDevice, ArrayList<Media>> demoMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 
 		demoMediaToDeviceMapping.put(registeredDevices.get(3),
 				new ArrayList<Media>(demoTumMediaList.subList(1, 1)));
@@ -262,6 +308,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Event getEventForDevice(String deviceId) {
 		Event result = null;
+		events = getAllEvents();
 		for (Event ev : events) {
 			if (ev.containsDeviceId(deviceId)) {
 				result = ev;
@@ -274,8 +321,13 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Boolean addEvent(Event event) {
 		if (event != null) {
-			events.add(event);
-			return true;
+			String result = persistObject(event);
+			if (result.equals("ok")) {
+				// events = getAllEvents();
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
@@ -283,12 +335,11 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public Boolean deleteEvent(Event event) {
-		if (event != null && events.contains(event)) {
-			events.remove(event);
-			return true;
-		} else {
+		if (event == null) {
 			return false;
 		}
+
+		return deleteEvent(event.getEventId());
 	}
 
 	@Override
@@ -296,29 +347,32 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		if (eventId == null || eventId.isEmpty()) {
 			return false;
 		}
-		Event event = null;
-		for (Event ev : events) {
-			if (ev.getEventId().equals(eventId)) {
-				event = ev;
-				break;
-			}
+		String result = "ok";
+		try {
+			Event eventToRemove = getEvent(eventId);
+			result = deleteObject(eventToRemove);
+		} catch (Exception e) {
+			result = e.getMessage();
 		}
 
-		if (event == null) {
+		if (result.equals("ok")) {
+			return true;
+		} else {
 			return false;
 		}
-
-		return deleteEvent(event);
 	}
 
 	@Override
 	public Event getEvent(String eventId) {
 		Event ev = null;
-		for (Event e : events) {
-			if (e.getEventId().equals(eventId)) {
-				ev = e;
-				break;
-			}
+		try {
+			Query getEventQuery = em
+					.createQuery("select ev from Event ev where ev.eventId = :eID");
+			getEventQuery.setParameter("eID", eventId);
+
+			ev = (Event) getEventQuery.getSingleResult();
+		} catch (Exception e) {
+
 		}
 		return ev;
 	}
@@ -326,35 +380,43 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public ArrayList<Event> getAllEvents() {
 		Query getEventsQuery = em.createQuery("select ev from Event ev");
-		
-		ArrayList<Event> eventsResult = new ArrayList<Event>(getEventsQuery.getResultList());
-		
+
+		ArrayList<Event> eventsResult = new ArrayList<Event>(
+				getEventsQuery.getResultList());
+
 		return eventsResult;
 	}
 
 	@Override
-	public Boolean mapMediaToDevicesForEvent(Event event,
-			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping) {
+	public Boolean updateEventMediaToDeviceMapping(Event event,
+			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
 		if (event == null || mediaToDeviceMapping == null) {
 			return false;
 		}
 
-		if (!events.contains(event)) {
-			return false;
-		}
-
-		event.setEventMediaToDeviceMapping(mediaToDeviceMapping);
-		return true;
+		return updateEventMediaToDeviceMapping(event.getEventId(),
+				mediaToDeviceMapping);
 	}
 
 	@Override
-	public Boolean mapMediaToDevicesForEvent(String eventId,
-			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping) {
-		Event ev = getEvent(eventId);
-		if (ev == null) {
+	public Boolean updateEventMediaToDeviceMapping(String eventId,
+			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping) {
+		if (eventId == null || eventId.isEmpty()
+				|| mediaToDeviceMapping == null) {
 			return false;
 		}
-		return mapMediaToDevicesForEvent(ev, mediaToDeviceMapping);
+
+		Event dbEvent = getEvent(eventId);
+		if (dbEvent == null) {
+			return false;
+		}
+
+		dbEvent.setEventMediaToDeviceMapping(mediaToDeviceMapping);
+		if (updateObject(dbEvent).equals("ok")) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -441,8 +503,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		/*
 		 * Protocol: when a device has to be removed from the Schaukasten it has
 		 * the option to inform the server that it will become unavailable(to
-		 * avoid confusion). First I check if the device that wants to leave
-		 * the event was registered in the first place.
+		 * avoid confusion). First I check if the device that wants to leave the
+		 * event was registered in the first place.
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
 			clientIDToSocketMap.remove(device.getDeviceId());
@@ -494,8 +556,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public List<Media> getMediaForDeviceInEvent(String deviceID,
-			String eventID) {
+	public List<Media> getMediaForDeviceInEvent(String deviceID, String eventID) {
 		// Sanitize code
 		if (deviceID == null || deviceID.isEmpty() || eventID == null
 				|| eventID.isEmpty()) {
@@ -503,13 +564,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		}
 
 		// Search for an event with the given event ID
-		Event event = null;
-		for (Event ev : events) {
-			if (ev.getEventId().equals(eventID)) {
-				event = ev;
-				break;
-			}
-		}
+
+		Event event = getEvent(eventID);
 		if (event == null) {
 			return null;
 		}
@@ -536,6 +592,101 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 		return result; // result could still be null so when calling this method
 						// check the result.
+	}
+
+	@Override
+	public Boolean addMediaToEvent(String eventID, ArrayList<Media> newMedia) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (newMedia == null || newMedia.size() < 1) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			ev.addMedia(newMedia);
+			if (updateObject(ev).equals("ok")) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public Boolean removeMediaFromEvent(String eventID,
+			ArrayList<Media> mediaToRemove) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (mediaToRemove == null || mediaToRemove.size() < 1) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			ev.removeMedia(mediaToRemove);
+			if (updateObject(ev).equals("ok")) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public Boolean addDevicesToEvent(String eventID,
+			ArrayList<PlaybackDevice> newDevices) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (newDevices == null || newDevices.size() < 1) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			ev.addDevices(newDevices);
+			if (updateObject(ev).equals("ok")) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public Boolean removeDevicesFromEvent(String eventID,
+			ArrayList<PlaybackDevice> devicesToRemove) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (devicesToRemove == null || devicesToRemove.size() < 1) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			ev.removeDeviceList(devicesToRemove);
+			if (updateObject(ev).equals("ok")) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 }

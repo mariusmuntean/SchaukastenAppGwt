@@ -3,13 +3,19 @@ package de.tum.os.sa.shared.DTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import de.tum.os.sa.shared.EventState;
@@ -30,15 +36,17 @@ public class Event implements Serializable, IsSerializable {
 	String eventDescription;
 	String eventLocation;
 	String eventPictureUrl;
-	
-//	@ElementCollection
-//	List<Media> eventMedia;
-//	
-//	@ElementCollection
-//	List<PlaybackDevice> eventDevices;
-	
-	Map<PlaybackDevice, List<Media>> eventMediaToDeviceMapping;
+
+	@ElementCollection(fetch = FetchType.EAGER)
+	ArrayList<Media> eventMedia;
+
+	@ElementCollection(fetch = FetchType.EAGER)
+	ArrayList<PlaybackDevice> eventDevices;
+
+	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping;
 	EventState eventState;
+	@Temporal(TemporalType.TIMESTAMP)
+	Date eventCreation;
 
 	// Empty constructor for serialization.
 	public Event() {
@@ -52,6 +60,7 @@ public class Event implements Serializable, IsSerializable {
 		this.eventDescription = eventDescription;
 		this.eventLocation = eventLocation;
 		this.eventState = EventState.stoped;
+		this.eventCreation = new Date();
 	}
 
 	/**
@@ -126,7 +135,7 @@ public class Event implements Serializable, IsSerializable {
 	/**
 	 * @return the eventMediaToDeviceMapping
 	 */
-	public Map<PlaybackDevice, List<Media>> getEventMediaToDeviceMapping() {
+	public Map<PlaybackDevice, ArrayList<Media>> getEventMediaToDeviceMapping() {
 		return eventMediaToDeviceMapping;
 	}
 
@@ -135,7 +144,7 @@ public class Event implements Serializable, IsSerializable {
 	 *            the eventMediaToDeviceMapping to set
 	 */
 	public void setEventMediaToDeviceMapping(
-			HashMap<PlaybackDevice, List<Media>> eventMediaToDeviceMapping) {
+			HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping) {
 		this.eventMediaToDeviceMapping = eventMediaToDeviceMapping;
 	}
 
@@ -193,19 +202,88 @@ public class Event implements Serializable, IsSerializable {
 	 * @return the eventMedia
 	 */
 	public ArrayList<Media> getEventMedia() {
-		if (eventMediaToDeviceMapping != null) {
-			Collection<List<Media>> mediaLists = eventMediaToDeviceMapping.values();
-			HashSet<Media> media = new HashSet<Media>();
-			// Adding all Media to a set guarantees us that each Media element
-			// is present only once.
-			for (List<Media> mediaList : mediaLists) {
-				if (mediaList != null && mediaList.size() > 0) {
-					media.addAll(mediaList);
+		// if (eventMediaToDeviceMapping != null) {
+		// Collection<ArrayList<Media>> mediaLists =
+		// eventMediaToDeviceMapping.values();
+		// HashSet<Media> media = new HashSet<Media>();
+		// // Adding all Media to a set guarantees us that each Media element
+		// // is present only once.
+		// for (List<Media> mediaList : mediaLists) {
+		// if (mediaList != null && mediaList.size() > 0) {
+		// media.addAll(mediaList);
+		// }
+		// }
+		// return new ArrayList<Media>(media);
+		// } else {
+		// return null;
+		// }
+		return this.eventMedia;
+	}
+
+	public void setEventMedia(ArrayList<Media> newEventMedia) {
+		if (newEventMedia != null) {
+			this.eventMedia = newEventMedia;
+		} else {
+			this.eventMedia = new ArrayList<Media>();
+		}
+
+		// Maybe also clear the media to device mapping now?!
+		this.eventMediaToDeviceMapping.clear();
+	}
+
+	public void addMedia(Media newMedia) {
+		if (this.eventMedia == null) {
+			this.eventMedia = new ArrayList<Media>();
+		}
+
+		this.eventMedia.add(newMedia);
+	}
+
+	public void addMedia(ArrayList<Media> newMedia) {
+		if (this.eventMedia == null) {
+			this.eventMedia = new ArrayList<Media>();
+		}
+
+		if (newMedia == null || newMedia.size() < 1) {
+			return;
+		}
+
+		this.eventMedia.addAll(newMedia);
+	}
+
+	public void removeMedia(String mediaId) {
+		// sanitization
+		if (this.eventMedia == null || mediaId == null || mediaId.isEmpty()) {
+			return;
+		}
+
+		// Make sure the media item really exists
+		Media mdToRemove = null;
+		for (Media md : this.eventMedia) {
+			if (md.id.equals(mediaId)) {
+				mdToRemove = md;
+				break;
+			}
+		}
+
+		// If anything is found, remove it.
+		if (mdToRemove != null) {
+			this.eventMedia.remove(mdToRemove);
+			// Also remove it from every list in the mapping.
+			for (ArrayList<Media> mediaList : this.eventMediaToDeviceMapping
+					.values()) {
+				for (Media md : mediaList) {
+					if (md.id.equals(mdToRemove.id)) {
+						mediaList.remove(md);
+					}
 				}
 			}
-			return new ArrayList<Media>(media);
-		} else {
-			return null;
+		}
+	}
+
+	public void removeMedia(ArrayList<Media> mediaToRemove) {
+		for (Media med : mediaToRemove) {
+			removeMedia(med.getId());
 		}
 	}
 
@@ -213,11 +291,83 @@ public class Event implements Serializable, IsSerializable {
 	 * @return the Devices in this event or null if there are none.
 	 */
 	public List<PlaybackDevice> getEventDevices() {
-		if (eventMediaToDeviceMapping != null) {
-			return new ArrayList<PlaybackDevice>(
-					eventMediaToDeviceMapping.keySet());
+		// if (eventMediaToDeviceMapping != null) {
+		// return new ArrayList<PlaybackDevice>(
+		// eventMediaToDeviceMapping.keySet());
+		// } else {
+		// return null;
+		// }
+		return this.eventDevices;
+	}
+
+	public void setEventDevices(ArrayList<PlaybackDevice> neweventDevices) {
+		if (neweventDevices != null) {
+			this.eventDevices = neweventDevices;
 		} else {
-			return null;
+			this.eventDevices = new ArrayList<PlaybackDevice>();
+		}
+
+		// Maybe also clear the media to device mapping
+		this.eventMediaToDeviceMapping.clear();
+	}
+
+	public void addDevice(PlaybackDevice pd) {
+		if (this.eventDevices == null) {
+			this.eventDevices = new ArrayList<PlaybackDevice>();
+		}
+
+		if (pd != null) {
+			this.eventDevices.add(pd);
+		}
+
+	}
+
+	public void addDevices(ArrayList<PlaybackDevice> pd) {
+		if (this.eventDevices == null) {
+			this.eventDevices = new ArrayList<PlaybackDevice>();
+		}
+
+		if (pd != null && pd.size() > 0) {
+			this.eventDevices.addAll(pd);
+		}
+
+	}
+
+	public void removeDevice(String deviceId) {
+		// Just some sanitization
+		if (this.eventDevices == null || deviceId == null || deviceId.isEmpty()) {
+			return;
+		}
+		// Search for a device with the given ID
+		PlaybackDevice pdToRemove = null;
+		for (PlaybackDevice pd : this.eventDevices) {
+			if (pd.getDeviceId().equals(deviceId)) {
+				pdToRemove = pd;
+				break;
+			}
+		}
+		// If any is found remove it.
+		if (pdToRemove != null) {
+			this.eventDevices.remove(pdToRemove);
+			this.eventMediaToDeviceMapping.remove(pdToRemove);
+		}
+	}
+
+	public void removeDevices(ArrayList<String> deviceIds) {
+		for (String deviceID : deviceIds) {
+			removeDevice(deviceID);
+		}
+	}
+
+	public void removeDeviceList(ArrayList<PlaybackDevice> devicesToRemove) {
+		if (this.eventDevices == null || devicesToRemove == null
+				|| devicesToRemove.size() < 1) {
+			return;
+		}
+
+		for (PlaybackDevice pd : devicesToRemove) {
+			this.eventDevices.remove(pd);
+			this.eventMediaToDeviceMapping.remove(pd);
 		}
 	}
 
@@ -233,6 +383,10 @@ public class Event implements Serializable, IsSerializable {
 	 */
 	public String getEventId() {
 		return eventId;
+	}
+
+	public Date getEventCreation() {
+		return eventCreation;
 	}
 
 }

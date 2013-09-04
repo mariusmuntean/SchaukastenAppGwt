@@ -23,6 +23,10 @@ public class DisplayableEvent extends BaseModelData {
 	// HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping;
 	// EventState eventState;
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -343004740061591438L;
 	String eventName = "name";
 	String eventID = "id";
 	String eventDescription = "description";
@@ -112,7 +116,7 @@ public class DisplayableEvent extends BaseModelData {
 	}
 
 	public void setMediaToDeviceMapping(
-			Map<PlaybackDevice, List<Media>> newMapping) {
+			Map<PlaybackDevice, ArrayList<Media>> newMapping) {
 		set(eventMediaToDevicesMap, newMapping);
 	}
 }

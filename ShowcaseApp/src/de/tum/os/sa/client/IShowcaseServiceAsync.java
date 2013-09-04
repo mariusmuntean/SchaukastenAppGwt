@@ -45,7 +45,7 @@ public interface IShowcaseServiceAsync {
 
 	void getEvent(String eventId, AsyncCallback<Event> callback);
 
-	void mapMediaToDevicesForEvent(Event event,
+	void updateEventMediaToDeviceMapping(Event event,
 			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping,
 			AsyncCallback<Boolean> callback);
 
@@ -64,9 +64,22 @@ public interface IShowcaseServiceAsync {
 	void getMediaForDeviceInEvent(String deviceID, String eventID,
 			AsyncCallback<List<Media>> callback);
 
-	void mapMediaToDevicesForEvent(String eventId,
+	void updateEventMediaToDeviceMapping(String eventId,
 			HashMap<PlaybackDevice, List<Media>> mediaToDeviceMapping,
 			AsyncCallback<Boolean> callback);
 
 	void getDevice(String deviceId, AsyncCallback<PlaybackDevice> callback);
+
+	void addDevicesToEvent(String eventID, ArrayList<PlaybackDevice> newMedia,
+			AsyncCallback<Boolean> callback);
+
+	void removeDevicesFromEvent(String eventID,
+			ArrayList<PlaybackDevice> mediaToRemove,
+			AsyncCallback<Boolean> callback);
+
+	void addMediaToEvent(String eventID, ArrayList<Media> newMedia,
+			AsyncCallback<Boolean> callback);
+
+	void removeMediaFromEvent(String eventID, ArrayList<Media> mediaToRemove,
+			AsyncCallback<Boolean> callback);
 }
