@@ -38,12 +38,12 @@ public class Event implements Serializable, IsSerializable {
 	String eventPictureUrl;
 
 	@ElementCollection(fetch = FetchType.EAGER)
-	ArrayList<Media> eventMedia;
+	ArrayList<Media> eventMedia = new ArrayList<Media>();
 
 	@ElementCollection(fetch = FetchType.EAGER)
-	ArrayList<PlaybackDevice> eventDevices;
+	ArrayList<PlaybackDevice> eventDevices = new ArrayList<PlaybackDevice>();
 
-	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping;
+	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 	EventState eventState;
 	@Temporal(TemporalType.TIMESTAMP)
 	Date eventCreation;

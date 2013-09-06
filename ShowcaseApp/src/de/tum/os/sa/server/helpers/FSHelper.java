@@ -1,6 +1,11 @@
 package de.tum.os.sa.server.helpers;
 
 import java.io.File;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.commons.io.FileUtils;
 
@@ -78,6 +83,24 @@ public class FSHelper {
 		return result;
 	}
 
+	public Boolean createEventFolder(String eventName) {
+		if (!isEventNameAvailable(eventName)) {
+			return false;
+		}
+
+		Boolean result = true;
+		try {
+			String newEventFolderPath = getEventsFolderPath() + File.separator
+					+ eventName;
+			File newEventFolder = new File(newEventFolderPath);
+			result = newEventFolder.mkdir();
+		} catch (Exception ex) {
+			result = false;
+		}
+
+		return result;
+	}
+
 	public String getEventsFolderName() {
 		return eventsFolderName;
 	}
@@ -101,9 +124,8 @@ public class FSHelper {
 	 *         folder.
 	 */
 	public Boolean isEventNameAvailable(String eventName) {
-		File f = new File(getEventsFolderPath() + File.separator
-				+ eventName);
-		
+		File f = new File(getEventsFolderPath() + File.separator + eventName);
+
 		if (!f.exists()) {
 			return true;
 		} else {
@@ -113,5 +135,53 @@ public class FSHelper {
 				return false;
 			}
 		}
+	}
+
+	/**
+	 * Moves a file from a specified location to an Event's folder and renames
+	 * the file.
+	 * 
+	 * @param eventName
+	 *            - The name of the event to hold the file.
+	 * @param fileLocation
+	 *            - The initial location of the file.
+	 * @param newFileName
+	 *            - The new file name.
+	 * @return
+	 */
+	public Boolean moveFileToEvent(String eventName, String fileLocation,
+			String newFileName) {
+		// Sanity checks
+		if (eventName == null || eventName.isEmpty() || fileLocation == null
+				|| fileLocation.isEmpty() || newFileName == null
+				|| newFileName.isEmpty()) {
+			return false;
+		}
+
+		// First move the file
+		Path source = Paths.get(fileLocation);
+		Path destination = Paths.get(getEventsFolderPath() + File.separator
+				+ eventName+File.separator+newFileName);
+		Boolean operationStatus = true;
+		try {
+			Files.move(source, destination);
+		} catch (Exception ex) {
+			operationStatus = false;
+		}
+		if (!operationStatus) {
+			return false;
+		}
+
+		// If moving worked then rename the file.
+		try {
+			Files.move(destination, destination.resolveSibling(newFileName));
+		} catch (Exception ex) {
+			operationStatus = false;
+		}
+		if (!operationStatus) {
+			return false;
+		}
+
+		return operationStatus;
 	}
 }

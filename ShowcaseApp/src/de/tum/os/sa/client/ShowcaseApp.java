@@ -18,14 +18,16 @@ import de.tum.os.sa.shared.DTO.Event;
  */
 public class ShowcaseApp implements EntryPoint {
 	/**
-	 * The message displayed to the user when the server cannot be reached or returns an error.
+	 * The message displayed to the user when the server cannot be reached or
+	 * returns an error.
 	 */
 	private static final String SERVER_ERROR = "An error occurred while "
 			+ "attempting to contact the server. Please check your network "
 			+ "connection and try again.";
 
 	/**
-	 * Create a remote service proxy to talk to the server-side Greeting service.
+	 * Create a remote service proxy to talk to the server-side Greeting
+	 * service.
 	 */
 	private final IShowcaseServiceAsync showcareService = GWT
 			.create(IShowcaseService.class);
@@ -62,7 +64,8 @@ public class ShowcaseApp implements EntryPoint {
 				displayableEventsListStore.removeAll();
 				if (result != null && result.size() > 0) {
 					// Convert the result from Event to DisplayableEvent
-					// The ListStore is "observed" so changing it here is reflected by any observer.
+					// The ListStore is "observed" so changing it here is
+					// reflected by any observer.
 					for (Event event : result) {
 						displayableEventsListStore.add(getDEfromEvent(event));
 					}
@@ -77,7 +80,8 @@ public class ShowcaseApp implements EntryPoint {
 	 * 
 	 * @param event
 	 *            - The Event to be converted
-	 * @return - A DispalyableEvent instance containing the data from the supplied parameter.
+	 * @return - A DispalyableEvent instance containing the data from the
+	 *         supplied parameter.
 	 */
 	private DisplayableEvent getDEfromEvent(Event event) {
 		if (event == null)
@@ -96,7 +100,8 @@ public class ShowcaseApp implements EntryPoint {
 
 	public void startEvent(String eventID,
 			final AsyncCallback<Boolean> startEventResultCallback) {
-		if (eventID != null && !eventID.isEmpty() && startEventResultCallback != null) {
+		if (eventID != null && !eventID.isEmpty()
+				&& startEventResultCallback != null) {
 
 			AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 
@@ -118,10 +123,11 @@ public class ShowcaseApp implements EntryPoint {
 
 		}
 	}
-	
+
 	public void stopEvent(String eventID,
 			final AsyncCallback<Boolean> stopEventResultCallback) {
-		if (eventID != null && !eventID.isEmpty() && stopEventResultCallback != null) {
+		if (eventID != null && !eventID.isEmpty()
+				&& stopEventResultCallback != null) {
 
 			AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 
@@ -143,9 +149,11 @@ public class ShowcaseApp implements EntryPoint {
 
 		}
 	}
+
 	public void pauseEvent(String eventID,
 			final AsyncCallback<Boolean> pauseEventResultCallback) {
-		if (eventID != null && !eventID.isEmpty() && pauseEventResultCallback != null) {
+		if (eventID != null && !eventID.isEmpty()
+				&& pauseEventResultCallback != null) {
 
 			AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 
@@ -167,6 +175,45 @@ public class ShowcaseApp implements EntryPoint {
 
 		}
 	}
-	
+
+	public void addEventProxy(Event event,
+			final AsyncCallback<Boolean> addEventCallback) {
+		AsyncCallback<Boolean> realAddEventCallback = new AsyncCallback<Boolean>() {
+
+			@Override
+			public void onSuccess(Boolean result) {
+				addEventCallback.onSuccess(result);
+
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				addEventCallback.onFailure(caught);
+
+			}
+		};
+		showcareService.addEvent(event, realAddEventCallback);
+	}
+
+	public void addFileToEventProxy(String eventName, String fileLocation,
+			String newFileName, final AsyncCallback<Boolean> addFileCallback) {
+
+		AsyncCallback<Boolean> realAddFileCallback = new AsyncCallback<Boolean>() {
+
+			@Override
+			public void onSuccess(Boolean result) {
+				addFileCallback.onSuccess(result);
+
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				addFileCallback.onFailure(caught);
+
+			}
+		};
+		showcareService.addFileToEvent(eventName, newFileName, fileLocation,
+				realAddFileCallback);
+	}
 
 }

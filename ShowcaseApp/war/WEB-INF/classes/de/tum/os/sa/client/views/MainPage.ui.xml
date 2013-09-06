@@ -81,15 +81,15 @@
 														height="300px"></g:Image>
 												</g:cell>
 												<g:cell horizontalAlignment="ALIGN_CENTER" width="100%">
-													<g:DecoratorPanel title="Quick View" width="90%">
+													<g:DecoratorPanel title="Quick View"
+														width="90%">
 														<g:Grid width="95%">
 															<g:row>
 																<g:customCell>
 																	<g:Label text="Name:"></g:Label>
 																</g:customCell>
 																<g:customCell>
-																	<g:TextBox ui:field="txtBoxEventName"
-																	width="100%"></g:TextBox>
+																	<g:TextBox ui:field="txtBoxEventName" width="100%"></g:TextBox>
 																</g:customCell>
 															</g:row>
 															<g:row>
@@ -98,7 +98,7 @@
 																</g:customCell>
 																<g:customCell>
 																	<g:TextBox ui:field="txtBoxEventDescription"
-																	width="100%"></g:TextBox>
+																		width="100%"></g:TextBox>
 																</g:customCell>
 															</g:row>
 															<g:row>
@@ -107,7 +107,7 @@
 																</g:customCell>
 																<g:customCell>
 																	<g:TextBox ui:field="txtBoxEventLocation"
-																	width="100%"></g:TextBox>
+																		width="100%"></g:TextBox>
 																</g:customCell>
 															</g:row>
 															<g:row>
@@ -115,8 +115,7 @@
 																	<g:Label text="State "></g:Label>
 																</g:customCell>
 																<g:customCell>
-																	<g:TextBox ui:field="txtBoxEventState"
-																	width="100%"></g:TextBox>
+																	<g:TextBox ui:field="txtBoxEventState" width="100%"></g:TextBox>
 																</g:customCell>
 															</g:row>
 															<g:row>
@@ -139,6 +138,27 @@
 							</g:cell>
 							<g:cell>
 								<views:EventWidget ui:field="eventWidget"></views:EventWidget>
+							</g:cell>
+						</g:VerticalPanel>
+						<g:VerticalPanel>
+							<g:cell>
+								<g:Button ui:field="btnManageEventNewEvent"></g:Button>
+							</g:cell>
+							<g:cell>
+								<g:HTMLPanel>
+									<div id="uploadDiv">
+										<g:FormPanel ui:field="formPanelManageEvent">
+											<g:VerticalPanel>
+												<g:cell>
+													<g:FileUpload ui:field="fileUploadManageEvent" name="FileUploadWidget"></g:FileUpload>
+												</g:cell>
+											</g:VerticalPanel>
+										</g:FormPanel>
+									</div>
+								</g:HTMLPanel>
+							</g:cell>
+							<g:cell>
+								<g:Button ui:field="btnManageEventUploadFile" text="Submit"></g:Button>
 							</g:cell>
 						</g:VerticalPanel>
 					</g:DeckPanel>

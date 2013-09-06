@@ -1,5 +1,6 @@
 package de.tum.os.sa.server;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,18 +12,31 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import de.tum.os.sa.client.IShowcaseService;
 import de.tum.os.sa.server.helpers.FSHelper;
 import de.tum.os.sa.shared.CommandType;
 import de.tum.os.sa.shared.DeviceType;
 import de.tum.os.sa.shared.MediaTypes;
+import de.tum.os.sa.shared.ShowcaseConstants;
 import de.tum.os.sa.shared.DTO.Event;
 import de.tum.os.sa.shared.DTO.Media;
 import de.tum.os.sa.shared.DTO.PlaybackDevice;
 import de.tum.os.sa.shared.commands.Command;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
+// Needed for the file upload part
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 
 /**
  * The server side implementation of the RPC service.
@@ -48,6 +62,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	public static final String persistence_unit_name = "showcase";
 	EntityManagerFactory emf;
 	EntityManager em;
+
+	FSHelper fsHelper = new FSHelper();
 
 	public ShowcaseServiceImpl() {
 		super();
@@ -79,13 +95,58 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		events.clear();
 		events = getAllEvents();
 
-		FSHelper fsHelper = new FSHelper();
-		fsHelper.createFolderStructure(false);
+		fsHelper.createFolderStructure(true);
 	}
 
 	@Override
 	protected void checkPermutationStrongName() throws SecurityException {
 		return;
+	}
+
+	/*
+	 * Overriding the service method to hook myself in. I need this to intercept
+	 * uploaded files.
+	 */
+	private FileItem fi;
+
+	@Override
+	protected void service(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		boolean isMultipart = ServletFileUpload
+				.isMultipartContent(new ServletRequestContext(request));
+
+		if (isMultipart) {
+			FileItemFactory fif = new DiskFileItemFactory();
+			ServletFileUpload upload = new ServletFileUpload(fif);
+			try {
+				List items = upload.parseRequest(request);
+				fi = (FileItem) items.get(0); // I upload only one file, for
+												// now.
+
+				if (fi == null) {
+					super.service(request, response);
+					return;
+				} else if (fi.getFieldName().equalsIgnoreCase(
+						"FileUploadWidget")) {
+					String fileName = fi.getName();
+					String tempFileLocation = ((org.apache.commons.fileupload.disk.DiskFileItem) fi)
+							.getStoreLocation().getPath();
+					response.setStatus(HttpServletResponse.SC_CREATED);
+					response.getWriter().print(
+							ShowcaseConstants.FileUploadOkMessage
+									+ ShowcaseConstants.ResponseDelimiter
+									+ fileName
+									+ ShowcaseConstants.ResponseDelimiter
+									+ tempFileLocation);
+					response.flushBuffer();
+				}
+			} catch (FileUploadException ex) {
+				System.out.println(ex);
+			}
+		} else {
+			super.service(request, response);
+			return;
+		}
 	}
 
 	private String persistObject(Object obj) {
@@ -320,7 +381,20 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public Boolean addEvent(Event event) {
-		if (event != null) {
+		if (event == null || event.getEventName() == null
+				|| event.getEventName().isEmpty()
+				|| !fsHelper.isEventNameAvailable(event.getEventName())) {
+			return false;
+
+		} else {
+			// Create a folder to hold event media
+			Boolean createEventFolderResult = fsHelper.createEventFolder(event
+					.getEventName());
+			if (!createEventFolderResult) {
+				return false;
+			}
+
+			// Save event to database
 			String result = persistObject(event);
 			if (result.equals("ok")) {
 				// events = getAllEvents();
@@ -328,8 +402,6 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 			} else {
 				return false;
 			}
-		} else {
-			return false;
 		}
 	}
 
@@ -687,6 +759,20 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public Boolean addFileToEvent(String eventName, String fileName,
+			String fileLocation) {
+		if (eventName == null || eventName.isEmpty() || fileLocation == null
+				|| fileLocation.isEmpty() || fileName == null
+				|| fileName.isEmpty()) {
+			return false;
+		}
+		
+		
+
+		return fsHelper.moveFileToEvent(eventName, fileLocation, fileName);
 	}
 
 }
