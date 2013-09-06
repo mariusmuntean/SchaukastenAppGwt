@@ -18,6 +18,7 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.regexp.shared.SplitResult;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -333,6 +334,7 @@ public class MainPage extends Composite {
 									addFileCallback);
 						} else {
 							Info.display("Error", "Result: " + result);
+							Window.alert("Result: "+result);
 						}
 
 					}

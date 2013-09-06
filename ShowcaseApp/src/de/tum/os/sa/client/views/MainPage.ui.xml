@@ -3,6 +3,9 @@
 	xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:extGwtWgt="urn:import:com.extjs.gxt.ui.client.widget"
 	xmlns:views="urn:import:de.tum.os.sa.client.views">
 
+	<ui:with field="res"
+		type="de.tum.os.sa.client.resources.Showcaseresources"></ui:with>
+
 	<ui:style>
 		.important {
 			font-weight: bold;
@@ -26,7 +29,13 @@
 		.deckPanelStyle {
 			width: 100%;
 		}
+		
+		.manageEventsGridStyle {
+			margin-left: auto;
+			margin-right: auto;
+		}
 	</ui:style>
+
 	<g:VerticalPanel styleName="{style.vPanelStyle}">
 		<!-- HEADER -->
 		<g:cell>
@@ -140,27 +149,105 @@
 								<views:EventWidget ui:field="eventWidget"></views:EventWidget>
 							</g:cell>
 						</g:VerticalPanel>
-						<g:VerticalPanel>
-							<g:cell>
-								<g:Button ui:field="btnManageEventNewEvent"></g:Button>
-							</g:cell>
-							<g:cell>
-								<g:HTMLPanel>
-									<div id="uploadDiv">
-										<g:FormPanel ui:field="formPanelManageEvent">
+						<!-- Manage Events page -->
+						<g:DecoratedTabPanel ui:field="decoTabPanelManageEvents"
+							width="100%" animationEnabled="true" title="Manage Events Here">
+							<!-- ADD EVENT -->
+							<g:Tab text="Add">
+								<g:VerticalPanel>
+									<g:cell>
+										<g:Grid cellSpacing="10" styleName="{style.manageEventsGridStyle}">
+											<!-- Row 1 -->
+											<g:row>
+												<g:customCell>
+													<g:VerticalPanel width="90%"													
+														horizontalAlignment="ALIGN_CENTER">
+														<g:cell>
+															<g:Label text="Event Title" horizontalAlignment="ALIGN_CENTER"></g:Label>
+														</g:cell>
+														<g:cell>
+															<g:TextBox ui:field="txtBoxManageEvent_EvTitle"
+																width="100%"></g:TextBox>
+														</g:cell>
+													</g:VerticalPanel>
+												</g:customCell>
+												<g:customCell>
+													<g:VerticalPanel width="90%"
+														horizontalAlignment="ALIGN_CENTER">
+														<g:cell>
+															<g:Label text="Event Location"
+																horizontalAlignment="ALIGN_CENTER"></g:Label>
+														</g:cell>
+														<g:cell>
+															<g:TextBox ui:field="txtBoxManageEvent_EvDescription"
+																width="100%"></g:TextBox>
+														</g:cell>
+													</g:VerticalPanel>
+												</g:customCell>
+											</g:row>
+											<g:row>
+												<g:customCell>
+													<g:Label height="20px"></g:Label>
+												</g:customCell>
+											</g:row>
+											<!-- Row 3 -->
+											<g:row>
+												<g:customCell>
+													<g:Image altText="Event logo here" width="300px"
+														height="300px" url="{res.genericEventLogo.getURL}"></g:Image>
+												</g:customCell>
+												<g:customCell>
+													<g:VerticalPanel>
+														<g:cell>
+															<g:Label text="Event description"></g:Label>
+														</g:cell>
+														<g:cell>
+															<g:TextArea width="400px" height="250px"></g:TextArea>
+														</g:cell>
+													</g:VerticalPanel>
+												</g:customCell>
+											</g:row>
+											<!-- Row 4 -->
+											<g:row>
+												<g:customCell>
+													<g:Label></g:Label>
+												</g:customCell>
+												<g:customCell>
+													<g:PushButton ui:field="btnManageEventsAdd_NewEvent"
+														text="CREATE"></g:PushButton>
+												</g:customCell>
+												<g:customCell>
+													<g:Label></g:Label>
+												</g:customCell>
+											</g:row>
+										</g:Grid>
+									</g:cell>
+									<g:cell>
+										<g:DisclosurePanel ui:field="disclosureManageEventsAdd_EventMedia"
+											animationEnabled="true" open="false" title="Event Media">
+											<g:header>Event Media</g:header>
 											<g:VerticalPanel>
 												<g:cell>
-													<g:FileUpload ui:field="fileUploadManageEvent" name="FileUploadWidget"></g:FileUpload>
+												<g:ListBox></g:ListBox>
 												</g:cell>
 											</g:VerticalPanel>
+										</g:DisclosurePanel>
+									</g:cell>
+									<g:cell>
+										<g:Button ui:field="btnManageEventNewEvent"></g:Button>
+									</g:cell>
+									<g:cell>
+										<g:FormPanel ui:field="formPanelManageEvent">
+											<g:FileUpload ui:field="fileUploadManageEvent"
+												name="FileUploadWidget"></g:FileUpload>
 										</g:FormPanel>
-									</div>
-								</g:HTMLPanel>
-							</g:cell>
-							<g:cell>
-								<g:Button ui:field="btnManageEventUploadFile" text="Submit"></g:Button>
-							</g:cell>
-						</g:VerticalPanel>
+									</g:cell>
+									<g:cell>
+										<g:Button ui:field="btnManageEventUploadFile" text="Submit"></g:Button>
+									</g:cell>
+								</g:VerticalPanel>
+							</g:Tab>
+						</g:DecoratedTabPanel>
 					</g:DeckPanel>
 				</g:cell>
 			</g:HorizontalPanel>
