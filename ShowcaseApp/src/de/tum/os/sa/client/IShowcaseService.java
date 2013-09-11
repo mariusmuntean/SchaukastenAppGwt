@@ -92,7 +92,7 @@ public interface IShowcaseService extends RemoteService {
 
 	Boolean stopEvent(String eventID);
 	
-	Boolean addFileToEvent(String eventName, String fileName, String fileLocation);
+	Boolean addFileToEvent(String eventID, String fileName, String fileLocation);
 
 	/*
 	 * 

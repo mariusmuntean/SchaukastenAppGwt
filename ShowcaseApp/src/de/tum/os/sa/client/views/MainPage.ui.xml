@@ -34,6 +34,11 @@
 			margin-left: auto;
 			margin-right: auto;
 		}
+		
+		.manageEventMediaGridStyle {
+			margin-left: auto;
+			margin-right: auto;
+		}
 	</ui:style>
 
 	<g:VerticalPanel styleName="{style.vPanelStyle}">
@@ -160,14 +165,14 @@
 											<!-- Row 1 -->
 											<g:row>
 												<g:customCell>
-													<g:VerticalPanel width="90%"													
+													<g:VerticalPanel width="90%"
 														horizontalAlignment="ALIGN_CENTER">
 														<g:cell>
 															<g:Label text="Event Title" horizontalAlignment="ALIGN_CENTER"></g:Label>
 														</g:cell>
 														<g:cell>
 															<g:TextBox ui:field="txtBoxManageEvent_EvTitle"
-																width="100%"></g:TextBox>
+																width="100%" textAlignment="ALIGN_CENTER"></g:TextBox>
 														</g:cell>
 													</g:VerticalPanel>
 												</g:customCell>
@@ -179,7 +184,7 @@
 																horizontalAlignment="ALIGN_CENTER"></g:Label>
 														</g:cell>
 														<g:cell>
-															<g:TextBox ui:field="txtBoxManageEvent_EvDescription"
+															<g:TextBox ui:field="txtBoxManageEvent_EvLocation"
 																width="100%"></g:TextBox>
 														</g:cell>
 													</g:VerticalPanel>
@@ -202,7 +207,8 @@
 															<g:Label text="Event description"></g:Label>
 														</g:cell>
 														<g:cell>
-															<g:TextArea width="400px" height="250px"></g:TextArea>
+															<g:TextArea ui:field="txtAreaManageEvents_Add_EvDescription"
+																width="400px" height="250px"></g:TextArea>
 														</g:cell>
 													</g:VerticalPanel>
 												</g:customCell>
@@ -213,8 +219,8 @@
 													<g:Label></g:Label>
 												</g:customCell>
 												<g:customCell>
-													<g:PushButton ui:field="btnManageEventsAdd_NewEvent"
-														text="CREATE"></g:PushButton>
+													<g:Button ui:field="btnManageEventsAdd_NewEvent"
+														text="CREATE"></g:Button>
 												</g:customCell>
 												<g:customCell>
 													<g:Label></g:Label>
@@ -225,25 +231,43 @@
 									<g:cell>
 										<g:DisclosurePanel ui:field="disclosureManageEventsAdd_EventMedia"
 											animationEnabled="true" open="false" title="Event Media">
-											<g:header>Event Media</g:header>
-											<g:VerticalPanel>
-												<g:cell>
-												<g:ListBox></g:ListBox>
-												</g:cell>
-											</g:VerticalPanel>
+											<!-- <g:customHeader> <g:HorizontalPanel> <g:cell> <g:Image url="{res.eventMediaIcon.getURL}" 
+												height="75px"></g:Image> </g:cell> <g:cell verticalAlignment="ALIGN_MIDDLE"> 
+												<g:Label text="Event Media" ></g:Label> </g:cell> </g:HorizontalPanel> </g:customHeader> -->
+											<g:header>Manage Event Media</g:header>
+											<g:Grid width="100%" styleName="{style.manageEventMediaGridStyle}">
+												<!-- Row1 -->
+												<g:row>
+													<g:customCell>
+														<g:Label text="Add media files"></g:Label>
+													</g:customCell>
+													<g:customCell>
+														<g:VerticalPanel>
+															<g:cell>
+																<g:FormPanel ui:field="formPanelManageEvent">
+																	<g:FileUpload ui:field="fileUploadManageEvent"
+																		name="FileUploadWidget"></g:FileUpload>
+																</g:FormPanel>
+															</g:cell>
+															<g:cell>
+																<g:Button ui:field="btnManageEventUploadFile"
+																	text="Add file"></g:Button>
+															</g:cell>
+														</g:VerticalPanel>
+													</g:customCell>
+												</g:row>
+												<!-- Row2 -->
+												<g:row>
+													<g:customCell>
+														<g:Label text="Existing media files"></g:Label>
+													</g:customCell>
+													<g:customCell>
+														<extGwtWgt:ListView ui:field="lstViewEventMedia"
+															width="300" height="450"></extGwtWgt:ListView>
+													</g:customCell>
+												</g:row>
+											</g:Grid>
 										</g:DisclosurePanel>
-									</g:cell>
-									<g:cell>
-										<g:Button ui:field="btnManageEventNewEvent"></g:Button>
-									</g:cell>
-									<g:cell>
-										<g:FormPanel ui:field="formPanelManageEvent">
-											<g:FileUpload ui:field="fileUploadManageEvent"
-												name="FileUploadWidget"></g:FileUpload>
-										</g:FormPanel>
-									</g:cell>
-									<g:cell>
-										<g:Button ui:field="btnManageEventUploadFile" text="Submit"></g:Button>
 									</g:cell>
 								</g:VerticalPanel>
 							</g:Tab>

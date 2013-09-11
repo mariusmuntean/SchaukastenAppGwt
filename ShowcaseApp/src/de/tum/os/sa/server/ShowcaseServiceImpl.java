@@ -762,17 +762,40 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public Boolean addFileToEvent(String eventName, String fileName,
+	public Boolean addFileToEvent(String eventID, String fileName,
 			String fileLocation) {
-		if (eventName == null || eventName.isEmpty() || fileLocation == null
+		if (eventID == null || eventID.isEmpty() || fileLocation == null
 				|| fileLocation.isEmpty() || fileName == null
 				|| fileName.isEmpty()) {
 			return false;
 		}
-		
-		
+		Event ev = getEvent(eventID);
+		String eventName = ev.getEventName();
+		if (eventName == null || eventName.isEmpty()) {
+			return false;
+		}
 
-		return fsHelper.moveFileToEvent(eventName, fileLocation, fileName);
+		Boolean result = true;
+		// Add file to the event folder
+		result = fsHelper.moveFileToEvent(eventName, fileLocation, fileName);
+		if(!result){
+			return false;
+		}
+
+		// Add a Media object to the event
+		Media newMedia = new Media(fileName, UUID.randomUUID().toString(), "",
+				"", fsHelper.getFileTypeFromName(fileName));
+		ev.addMedia(newMedia);
+
+		// Persist event
+		String persistResult = persistObject(ev);
+		if (persistResult.equals("ok")) {
+			result = true;
+		} else {
+			result = false;
+		}
+
+		return result;
 	}
 
 }

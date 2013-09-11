@@ -10,8 +10,10 @@ import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import de.tum.os.sa.client.models.DisplayableEvent;
+import de.tum.os.sa.client.models.DisplayableMedia;
 import de.tum.os.sa.client.views.MainPage;
 import de.tum.os.sa.shared.DTO.Event;
+import de.tum.os.sa.shared.DTO.Media;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -36,6 +38,7 @@ public class ShowcaseApp implements EntryPoint {
 
 	MainPage mainPage;
 	ListStore<DisplayableEvent> displayableEventsListStore = new ListStore<DisplayableEvent>();
+	ListStore<DisplayableMedia> currentEventdisplayableMediaListStore = new ListStore<DisplayableMedia>();
 
 	/**
 	 * This is the entry point method.
@@ -43,7 +46,8 @@ public class ShowcaseApp implements EntryPoint {
 	public void onModuleLoad() {
 		serviceDef.setServiceEntryPoint(addr);
 
-		mainPage = new MainPage(this, displayableEventsListStore);
+		mainPage = new MainPage(this, displayableEventsListStore,
+				currentEventdisplayableMediaListStore);
 
 		fetchInitialData();
 
@@ -195,7 +199,7 @@ public class ShowcaseApp implements EntryPoint {
 		showcareService.addEvent(event, realAddEventCallback);
 	}
 
-	public void addFileToEventProxy(String eventName, String fileLocation,
+	public void addFileToEventProxy(String eventID, String fileLocation,
 			String newFileName, final AsyncCallback<Boolean> addFileCallback) {
 
 		AsyncCallback<Boolean> realAddFileCallback = new AsyncCallback<Boolean>() {
@@ -212,8 +216,45 @@ public class ShowcaseApp implements EntryPoint {
 
 			}
 		};
-		showcareService.addFileToEvent(eventName, newFileName, fileLocation,
+		showcareService.addFileToEvent(eventID, newFileName, fileLocation,
 				realAddFileCallback);
+		
+		// fetch updated media list
+		fetchEventMedia(eventID);
+	}
+
+	public void fetchEventMedia(String eventID) {
+
+		AsyncCallback<Event> getEventCallback = new AsyncCallback<Event>() {
+
+			@Override
+			public void onSuccess(Event result) {
+				currentEventdisplayableMediaListStore.removeAll();
+				if (result != null) {
+					for (Media med : result.getEventMedia()) {
+						currentEventdisplayableMediaListStore
+								.add(getDispMedFromMed(med));
+					}
+				}
+
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+
+			}
+		};
+
+		showcareService.getEvent(eventID, getEventCallback);
+	}
+
+	private DisplayableMedia getDispMedFromMed(Media media) {
+		DisplayableMedia dm = new DisplayableMedia(media.getName(),
+				media.getId(), media.getDescription(), media.getLocation(),
+				media.getType());
+
+		return dm;
 	}
 
 }

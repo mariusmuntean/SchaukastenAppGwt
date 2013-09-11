@@ -35,10 +35,8 @@ public class Event implements Serializable, IsSerializable {
 	String eventLocation;
 	String eventPictureUrl;
 
-	@ElementCollection(fetch = FetchType.EAGER)
 	ArrayList<Media> eventMedia = new ArrayList<Media>();
 
-	@ElementCollection(fetch = FetchType.EAGER)
 	ArrayList<PlaybackDevice> eventDevices = new ArrayList<PlaybackDevice>();
 
 	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
@@ -59,6 +57,7 @@ public class Event implements Serializable, IsSerializable {
 		this.eventLocation = eventLocation;
 		this.eventState = EventState.stoped;
 		this.eventCreation = new Date();
+		
 	}
 
 	/**
@@ -143,6 +142,8 @@ public class Event implements Serializable, IsSerializable {
 	 */
 	public void setEventMediaToDeviceMapping(
 			HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping) {
+		
+		// ToDo if new mapping is set, update the media list and the devices list 
 		this.eventMediaToDeviceMapping = eventMediaToDeviceMapping;
 	}
 

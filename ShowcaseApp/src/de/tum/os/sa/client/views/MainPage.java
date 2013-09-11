@@ -1,7 +1,5 @@
 package de.tum.os.sa.client.views;
 
-import java.util.regex.Pattern;
-
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
@@ -13,9 +11,6 @@ import com.extjs.gxt.ui.client.widget.ListView;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.regexp.shared.MatchResult;
-import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.regexp.shared.SplitResult;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Window;
@@ -23,17 +18,21 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DeckPanel;
+import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 
 import de.tum.os.sa.client.ShowcaseApp;
+import de.tum.os.sa.client.helpers.UUID;
 import de.tum.os.sa.client.models.DisplayableEvent;
+import de.tum.os.sa.client.models.DisplayableMedia;
 import de.tum.os.sa.shared.ShowcaseConstants;
 import de.tum.os.sa.shared.DTO.Event;
 
@@ -77,8 +76,24 @@ public class MainPage extends Composite {
 	@UiField
 	RadioButton rBtnManageEvents, rBtnOverview;
 
+	/*
+	 * Manage Events region
+	 */
+
+	String manageEvAdd_CurrentEventName, manageEvAdd_CurrentEventID,
+			manageEvAdd_CurrentEventDesc, manageEvAdd_CurrentEventLocation;
+
 	@UiField
-	Button btnManageEventNewEvent, btnManageEventUploadFile;
+	Button btnManageEventUploadFile;
+
+	@UiField
+	Button btnManageEventsAdd_NewEvent;
+
+	@UiField
+	TextArea txtAreaManageEvents_Add_EvDescription;
+
+	@UiField
+	TextBox txtBoxManageEvent_EvTitle, txtBoxManageEvent_EvLocation;
 
 	// FileUpload
 	@UiField
@@ -87,6 +102,14 @@ public class MainPage extends Composite {
 	@UiField
 	FileUpload fileUploadManageEvent;
 
+	@UiField
+	DisclosurePanel disclosureManageEventsAdd_EventMedia;
+	
+	@UiField(provided=true)
+	ListView<DisplayableMedia> lstViewEventMedia;
+
+	private ListStore<DisplayableMedia> currentEventdisplayableMediaListStore = new ListStore<DisplayableMedia>();
+	
 	/*
 	 * Stores region
 	 */
@@ -103,6 +126,13 @@ public class MainPage extends Composite {
 					+ "<tr><td><font size=\"4\">{description}</font></td></tr>"
 					+ "<tr><td>Status: <big>{state}</big></td></tr>"
 					+ "</table>");
+	
+	final String displayableMediaTemplate = new String(
+					"<table>"
+					+ "<tr>"
+					+ "<td><img src=\"{imgName}\" width=\"100\" height=\"100\"></td>"
+					+ "<td><font size=\"6\">{name}</font></td></tr>"
+					+ "</table>");
 
 	interface MainPageUiBinder extends UiBinder<Widget, MainPage> {
 	}
@@ -111,11 +141,14 @@ public class MainPage extends Composite {
 
 	String uploadedFileName = "";
 	String uploadedTempFilePath = "";
+	UUID uuidGen = new UUID();
 
 	public MainPage(ShowcaseApp client,
-			ListStore<DisplayableEvent> displayableEventsListStore) {
+			ListStore<DisplayableEvent> displayableEventsListStore,
+			ListStore<DisplayableMedia> currentEventdisplayableMediaListStore) {
 		this.client = client;
 		this.displayableEventsListStore = displayableEventsListStore;
+		this.currentEventdisplayableMediaListStore = currentEventdisplayableMediaListStore;
 
 		instantiateControls();
 		initWidget(uiBinder.createAndBindUi(this));
@@ -130,6 +163,11 @@ public class MainPage extends Composite {
 		lstViewOverviewAvailableEvents.setStore(displayableEventsListStore);
 
 		eventWidget = new EventWidget(displayableEventsListStore);
+		
+		// Manage Events
+		lstViewEventMedia = new ListView<DisplayableMedia>();
+		lstViewEventMedia.setSimpleTemplate(displayableMediaTemplate);
+		lstViewEventMedia.setStore(currentEventdisplayableMediaListStore);
 
 	}
 
@@ -257,28 +295,53 @@ public class MainPage extends Composite {
 		/*
 		 * Manage Events page
 		 */
-		btnManageEventNewEvent.addClickHandler(new ClickHandler() {
+		btnManageEventsAdd_NewEvent.addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				AsyncCallback<Boolean> addEventCallback = new AsyncCallback<Boolean>() {
 
+				manageEvAdd_CurrentEventName = txtBoxManageEvent_EvTitle
+						.getText();
+				manageEvAdd_CurrentEventID = UUID.uuid();
+				manageEvAdd_CurrentEventLocation = txtBoxManageEvent_EvLocation
+						.getText();
+				manageEvAdd_CurrentEventDesc = txtAreaManageEvents_Add_EvDescription
+						.getText();
+
+				if (manageEvAdd_CurrentEventName == null
+						|| manageEvAdd_CurrentEventName.isEmpty()) {
+					return;
+				}
+
+				AsyncCallback<Boolean> addEventCallback = new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
-						// TODO Auto-generated method stub
+						if (result) {
+							Info.display("Success!",
+									manageEvAdd_CurrentEventName + " created!");
+							enableEventMediaUpload();
+						} else {
+							Info.display("Error!", " Could not create: "
+									+ manageEvAdd_CurrentEventName);
+							disableEventMediaUpload();
+						}
 
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
-						// TODO Auto-generated method stub
+						Info.display("Network Error!",
+								"Could not communicate with server.");
+						disableEventMediaUpload();
 
 					}
 				};
 
-				Event ev = new Event("dummyEvent1",
-						"26D917B7-B1F4-4C70-BF80-A2512A7DEC10",
-						"some description 1", "Freimann");
+				Event ev = new Event(manageEvAdd_CurrentEventName,
+						manageEvAdd_CurrentEventID,
+						manageEvAdd_CurrentEventDesc,
+						manageEvAdd_CurrentEventLocation);
+
 				client.addEventProxy(ev, addEventCallback);
 			}
 		});
@@ -295,10 +358,11 @@ public class MainPage extends Composite {
 						String result = event.getResults();
 						result = result.replace("<pre>", "");
 						result = result.replace("</pre>", "");
-						String r = "\\Q"+ShowcaseConstants.ResponseDelimiter+"\\E";
-						
-//						String splitPattern = Pattern
-//								.quote(ShowcaseConstants.ResponseDelimiter);
+						String r = "\\Q" + ShowcaseConstants.ResponseDelimiter
+								+ "\\E";
+
+						// String splitPattern = Pattern
+						// .quote(ShowcaseConstants.ResponseDelimiter);
 						String[] parsedResult = result.split(r);
 						String message = parsedResult[0];
 						uploadedFileName = parsedResult[1];
@@ -329,12 +393,13 @@ public class MainPage extends Composite {
 
 								}
 							};
-							client.addFileToEventProxy("dummyEvent1",
+							client.addFileToEventProxy(
+									manageEvAdd_CurrentEventID,
 									uploadedTempFilePath, uploadedFileName,
 									addFileCallback);
 						} else {
 							Info.display("Error", "Result: " + result);
-							Window.alert("Result: "+result);
+							Window.alert("Result: " + result);
 						}
 
 					}
@@ -351,6 +416,14 @@ public class MainPage extends Composite {
 			}
 		});
 
+	}
+
+	private void enableEventMediaUpload() {
+		disclosureManageEventsAdd_EventMedia.setOpen(true);
+	}
+
+	private void disableEventMediaUpload() {
+		disclosureManageEventsAdd_EventMedia.setOpen(false);
 	}
 
 	private void showDisplayableEventInfo(DisplayableEvent displayableEvent) {

@@ -6,8 +6,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
+import de.tum.os.sa.shared.MediaTypes;
 
 /**
  * 
@@ -24,6 +28,42 @@ public class FSHelper {
 	private static final String dataFolderName = "Showcasedata";
 	private static final String eventsFolderName = "Events";
 	private static final String otherFolderName = "Other";
+
+	private static final HashMap<String, MediaTypes> extensionToTypeMapping = new HashMap<String, MediaTypes>() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 6206021343568823680L;
+
+		{
+			// Images
+			put("jpg", MediaTypes.image);
+			put("jpeg", MediaTypes.image);
+			put("png", MediaTypes.image);
+			put("gif", MediaTypes.image);
+
+			// Text
+			put("txt", MediaTypes.text);
+			put("pdf", MediaTypes.pdf);
+
+			// Video
+			put("avi", MediaTypes.video);
+			put("mpg", MediaTypes.video);
+			put("mkv", MediaTypes.video);
+			put("mp4", MediaTypes.video);
+			put("flv", MediaTypes.video);
+
+			// Audio
+			put("mp3", MediaTypes.audio);
+			put("ogg", MediaTypes.audio);
+			put("aiff", MediaTypes.audio);
+			put("flac", MediaTypes.audio);
+
+			// Web
+			put("rss", MediaTypes.feed);
+			put("html", MediaTypes.html);
+		}
+	};
 
 	public FSHelper() {
 
@@ -147,7 +187,7 @@ public class FSHelper {
 	 *            - The initial location of the file.
 	 * @param newFileName
 	 *            - The new file name.
-	 * @return
+	 * @return - True if the operation succeeded, false otherwise.
 	 */
 	public Boolean moveFileToEvent(String eventName, String fileLocation,
 			String newFileName) {
@@ -161,7 +201,7 @@ public class FSHelper {
 		// First move the file
 		Path source = Paths.get(fileLocation);
 		Path destination = Paths.get(getEventsFolderPath() + File.separator
-				+ eventName+File.separator+newFileName);
+				+ eventName + File.separator + newFileName);
 		Boolean operationStatus = true;
 		try {
 			Files.move(source, destination);
@@ -183,5 +223,22 @@ public class FSHelper {
 		}
 
 		return operationStatus;
+	}
+
+	/**
+	 * Returns the best-fitting {@link MediaTypes} for the provided file name.
+	 * If no match is found {@link MediaTypes#other} is returned.
+	 * @param fileName - File name or file path.
+	 * @return - A {@link MediaTypes} describing the file.
+	 */
+	public MediaTypes getFileTypeFromName(String fileName) {
+		String ext = FilenameUtils.getExtension(fileName);
+
+		MediaTypes result = extensionToTypeMapping.get(ext.toLowerCase());
+		if (result == null) {
+			result = MediaTypes.other;
+		}
+
+		return result;
 	}
 }

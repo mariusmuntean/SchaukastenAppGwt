@@ -2,12 +2,6 @@ package de.tum.os.sa.shared.DTO;
 
 import java.io.Serializable;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import de.tum.os.sa.shared.MediaTypes;
