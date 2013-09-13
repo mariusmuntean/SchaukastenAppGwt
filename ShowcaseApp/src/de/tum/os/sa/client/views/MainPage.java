@@ -1,13 +1,23 @@
 package de.tum.os.sa.client.views;
 
+import com.extjs.gxt.ui.client.dnd.ListViewDragSource;
+import com.extjs.gxt.ui.client.dnd.ListViewDropTarget;
+import com.extjs.gxt.ui.client.dnd.DND.Feedback;
+import com.extjs.gxt.ui.client.event.EventType;
+import com.extjs.gxt.ui.client.event.ListViewEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.store.StoreListener;
 import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.ListView;
+import com.extjs.gxt.ui.client.widget.menu.Menu;
+import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,6 +25,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DeckPanel;
@@ -33,6 +44,7 @@ import de.tum.os.sa.client.ShowcaseApp;
 import de.tum.os.sa.client.helpers.UUID;
 import de.tum.os.sa.client.models.DisplayableEvent;
 import de.tum.os.sa.client.models.DisplayableMedia;
+import de.tum.os.sa.client.resources.Showcaseresources;
 import de.tum.os.sa.shared.ShowcaseConstants;
 import de.tum.os.sa.shared.DTO.Event;
 
@@ -104,12 +116,13 @@ public class MainPage extends Composite {
 
 	@UiField
 	DisclosurePanel disclosureManageEventsAdd_EventMedia;
-	
-	@UiField(provided=true)
-	ListView<DisplayableMedia> lstViewEventMedia;
+
+	@UiField(provided = true)
+	ListView<DisplayableMedia> lstViewEventMedia, lstViewEventMedia_removed;
 
 	private ListStore<DisplayableMedia> currentEventdisplayableMediaListStore = new ListStore<DisplayableMedia>();
-	
+	private ListStore<DisplayableMedia> currentEventdisplayableMediaRemovedListStore = new ListStore<DisplayableMedia>();
+
 	/*
 	 * Stores region
 	 */
@@ -126,13 +139,20 @@ public class MainPage extends Composite {
 					+ "<tr><td><font size=\"4\">{description}</font></td></tr>"
 					+ "<tr><td>Status: <big>{state}</big></td></tr>"
 					+ "</table>");
-	
-	final String displayableMediaTemplate = new String(
-					"<table>"
-					+ "<tr>"
-					+ "<td><img src=\"{imgName}\" width=\"100\" height=\"100\"></td>"
-					+ "<td><font size=\"6\">{name}</font></td></tr>"
-					+ "</table>");
+
+	final String displayableMediaTemplate = new String("<table>"
+			+ "<tr>"
+			// +
+			// "<input type=\"image\" src=\"images/button_delete_01.png\" width=\"30\" onclick=\"removeEventMediaFunc()\">"
+			+ "<td><img src=\"{imgName}\" height=\"50\"></td>"
+			+ "<td><font size=\"5\">{name}</font></td></tr>" + "</table>");
+
+	final String displayableMediaRemovedTemplate = new String("<table>"
+			+ "<tr>"
+			// +
+			// "<input type=\"image\" src=\"images/button_delete_01.png\" width=\"30\" onclick=\"removeEventMediaFunc()\">"
+			+ "<td><img src=\"{imgName}\" height=\"20\"></td>"
+			+ "<td><font size=\"2\">{name}</font></td></tr>" + "</table>");
 
 	interface MainPageUiBinder extends UiBinder<Widget, MainPage> {
 	}
@@ -150,9 +170,15 @@ public class MainPage extends Composite {
 		this.displayableEventsListStore = displayableEventsListStore;
 		this.currentEventdisplayableMediaListStore = currentEventdisplayableMediaListStore;
 
+		exportJsMethods();
 		instantiateControls();
 		initWidget(uiBinder.createAndBindUi(this));
 		wireUpControls();
+	}
+
+	private void exportJsMethods() {
+		exportRemoveEventMediaHandler();
+
 	}
 
 	private void instantiateControls() {
@@ -163,11 +189,19 @@ public class MainPage extends Composite {
 		lstViewOverviewAvailableEvents.setStore(displayableEventsListStore);
 
 		eventWidget = new EventWidget(displayableEventsListStore);
-		
+
 		// Manage Events
 		lstViewEventMedia = new ListView<DisplayableMedia>();
+		lstViewEventMedia.setDisplayProperty("name");
 		lstViewEventMedia.setSimpleTemplate(displayableMediaTemplate);
 		lstViewEventMedia.setStore(currentEventdisplayableMediaListStore);
+
+		lstViewEventMedia_removed = new ListView<DisplayableMedia>();
+		lstViewEventMedia.setDisplayProperty("name");
+		lstViewEventMedia_removed
+				.setSimpleTemplate(displayableMediaRemovedTemplate);
+		lstViewEventMedia_removed
+				.setStore(currentEventdisplayableMediaRemovedListStore);
 
 	}
 
@@ -416,6 +450,76 @@ public class MainPage extends Composite {
 			}
 		});
 
+		ListViewDragSource eventMediaDragSource = new ListViewDragSource(
+				lstViewEventMedia);
+		eventMediaDragSource.setGroup("eventMediaGroup1");
+		ListViewDragSource eventMediaDragSource_Removed = new ListViewDragSource(
+				lstViewEventMedia_removed);
+		eventMediaDragSource_Removed.setGroup("eventMediaGroup1");
+
+		ListViewDropTarget eventMediaDragTarget = new ListViewDropTarget(
+				lstViewEventMedia);
+		eventMediaDragTarget.setGroup("eventMediaGroup1");
+		eventMediaDragTarget.setFeedback(Feedback.INSERT);
+		ListViewDropTarget eventMediaRemovedDragTarget = new ListViewDropTarget(
+				lstViewEventMedia_removed);
+		eventMediaRemovedDragTarget.setGroup("eventMediaGroup1");
+		eventMediaRemovedDragTarget.setFeedback(Feedback.APPEND);
+
+		// Add context menu to event media list
+		Menu mediaListContextMenu = new Menu();
+		mediaListContextMenu.setWidth(100);
+		mediaListContextMenu.setHeight(40);
+		MenuItem removeSelectedMedia_MenuItem = new MenuItem();
+		removeSelectedMedia_MenuItem.setText("delete");
+		removeSelectedMedia_MenuItem.setIcon(AbstractImagePrototype
+				.create(Showcaseresources.INSTANCE.deleteIconSmall()));
+		removeSelectedMedia_MenuItem
+				.addSelectionListener(new SelectionListener<MenuEvent>() {
+					public void componentSelected(MenuEvent ce) {
+						final DisplayableMedia dm = lstViewEventMedia
+								.getSelectionModel().getSelectedItem();
+						if (dm != null) {
+							// currentEventdisplayableMediaListStore.remove(dm);
+							AsyncCallback<Boolean> removeMediaCallback = new AsyncCallback<Boolean>() {
+
+								@Override
+								public void onSuccess(Boolean result) {
+									if (result) {
+										Info.display("Success!", "Removed "
+												+ dm.getName());
+									} else {
+										Info.display(
+												"Error!",
+												"Couldn'd remove "
+														+ dm.getName());
+									}
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									Info.display("Network Error!",
+											"Couldn'd communicate with the server.");
+
+								}
+							};
+							client.removeMediaFromEvent(
+									manageEvAdd_CurrentEventID, dm.getID(),
+									removeMediaCallback);
+						}
+					};
+				});
+		mediaListContextMenu.add(removeSelectedMedia_MenuItem);
+		lstViewEventMedia.setContextMenu(mediaListContextMenu);
+
+	}
+
+	public static native void exportRemoveEventMediaHandler()/*-{
+		$wnd.removeEventMediaFunc = $entry(@de.tum.os.sa.client.views.MainPage::removeEventMediaBtn_OnClick());
+	}-*/;
+
+	public static void removeEventMediaBtn_OnClick() {
+		Info.display("Yay!", "It works!");
 	}
 
 	private void enableEventMediaUpload() {

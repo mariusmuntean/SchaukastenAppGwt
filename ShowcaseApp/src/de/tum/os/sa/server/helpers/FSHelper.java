@@ -228,7 +228,9 @@ public class FSHelper {
 	/**
 	 * Returns the best-fitting {@link MediaTypes} for the provided file name.
 	 * If no match is found {@link MediaTypes#other} is returned.
-	 * @param fileName - File name or file path.
+	 * 
+	 * @param fileName
+	 *            - File name or file path.
 	 * @return - A {@link MediaTypes} describing the file.
 	 */
 	public MediaTypes getFileTypeFromName(String fileName) {
@@ -240,5 +242,27 @@ public class FSHelper {
 		}
 
 		return result;
+	}
+
+	public Boolean deleteFileFromEvent(String fileName, String eventName) {
+		// Sanitize input
+		if (fileName == null || eventName == null || fileName.isEmpty()
+				|| eventName.isEmpty()) {
+			return false;
+		}
+
+		// Generate the path to the file
+		Path filePath = Paths.get(getEventsFolderPath() + File.separator
+				+ eventName + File.separator + fileName);
+
+		// Try to delete the file
+		Boolean operationStatus = true;
+		try {
+			operationStatus = Files.deleteIfExists(filePath);
+		} catch (Exception ex) {
+			operationStatus = false;
+		}
+
+		return operationStatus;
 	}
 }

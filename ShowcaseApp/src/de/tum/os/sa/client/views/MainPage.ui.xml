@@ -259,11 +259,27 @@
 												<!-- Row2 -->
 												<g:row>
 													<g:customCell>
-														<g:Label text="Existing media files"></g:Label>
+														<g:VerticalPanel>
+															<g:cell>
+																<g:Label text="Existing media files"></g:Label>
+															</g:cell>
+															<g:cell>
+																<extGwtWgt:ListView ui:field="lstViewEventMedia"
+																	width="500" height="300"></extGwtWgt:ListView>
+															</g:cell>
+														</g:VerticalPanel>
 													</g:customCell>
 													<g:customCell>
-														<extGwtWgt:ListView ui:field="lstViewEventMedia"
-															width="300" height="450"></extGwtWgt:ListView>
+														<g:VerticalPanel>
+															<g:cell>
+																<g:Label text="Removed media"
+																	horizontalAlignment="ALIGN_CENTER"></g:Label>
+															</g:cell>
+															<g:cell>
+																<extGwtWgt:ListView ui:field="lstViewEventMedia_removed"
+																	width="100" height="300"></extGwtWgt:ListView>
+															</g:cell>
+														</g:VerticalPanel>
 													</g:customCell>
 												</g:row>
 											</g:Grid>

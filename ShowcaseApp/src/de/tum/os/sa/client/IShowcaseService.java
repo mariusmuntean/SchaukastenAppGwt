@@ -76,6 +76,7 @@ public interface IShowcaseService extends RemoteService {
 			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping);
 	Boolean addMediaToEvent(String eventID, ArrayList<Media> newMedia);
 	Boolean removeMediaFromEvent(String eventID, ArrayList<Media> mediaToRemove);
+	Boolean removeMediaFromEvent(String eventID, String mediaIdToRemove);
 	
 	Boolean addDevicesToEvent(String eventID, ArrayList<PlaybackDevice> newDevices);
 	Boolean removeDevicesFromEvent(String eventID, ArrayList<PlaybackDevice> devicesToRemove);

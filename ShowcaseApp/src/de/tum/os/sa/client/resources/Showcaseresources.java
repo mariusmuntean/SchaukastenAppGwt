@@ -82,4 +82,13 @@ public interface Showcaseresources extends ClientBundle {
 	@Source("de/tum/os/sa/client/resources/icons/wav.png")
 	ImageResource wav();
 
+
+	@Source("button_delete_01.png")
+	ImageResource deleteIcon();
+
+
+	@Source("button_delete_01_small.png")
+	ImageResource deleteIconSmall();
+
+
 }

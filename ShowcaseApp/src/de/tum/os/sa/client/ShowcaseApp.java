@@ -199,7 +199,7 @@ public class ShowcaseApp implements EntryPoint {
 		showcareService.addEvent(event, realAddEventCallback);
 	}
 
-	public void addFileToEventProxy(String eventID, String fileLocation,
+	public void addFileToEventProxy(final String eventID, String fileLocation,
 			String newFileName, final AsyncCallback<Boolean> addFileCallback) {
 
 		AsyncCallback<Boolean> realAddFileCallback = new AsyncCallback<Boolean>() {
@@ -207,20 +207,22 @@ public class ShowcaseApp implements EntryPoint {
 			@Override
 			public void onSuccess(Boolean result) {
 				addFileCallback.onSuccess(result);
+				// fetch updated media list
+				fetchEventMedia(eventID);
 
 			}
 
 			@Override
 			public void onFailure(Throwable caught) {
 				addFileCallback.onFailure(caught);
+				// fetch updated media list
+				fetchEventMedia(eventID);
 
 			}
 		};
 		showcareService.addFileToEvent(eventID, newFileName, fileLocation,
 				realAddFileCallback);
-		
-		// fetch updated media list
-		fetchEventMedia(eventID);
+
 	}
 
 	public void fetchEventMedia(String eventID) {
@@ -255,6 +257,28 @@ public class ShowcaseApp implements EntryPoint {
 				media.getType());
 
 		return dm;
+	}
+
+	public void removeMediaFromEvent(final String eventID, String mediaIdToRemove,
+			final AsyncCallback<Boolean> removeMediaCallback) {
+		AsyncCallback<Boolean> realCallback = new AsyncCallback<Boolean>() {
+
+			@Override
+			public void onSuccess(Boolean result) {
+				removeMediaCallback.onSuccess(result);
+				// fetch updated media list
+				fetchEventMedia(eventID);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				removeMediaCallback.onFailure(caught);
+				// fetch updated media list
+				fetchEventMedia(eventID);
+			}
+		};
+		showcareService.removeMediaFromEvent(eventID, mediaIdToRemove,
+				realCallback);
 	}
 
 }

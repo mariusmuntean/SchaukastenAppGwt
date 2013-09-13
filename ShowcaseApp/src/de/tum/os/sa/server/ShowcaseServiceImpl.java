@@ -161,6 +161,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 			result = e.getMessage();
 		}
 		System.out.println("SERVER persistObject() result: " + result);
+		em.clear();
 		return result;
 	}
 
@@ -175,7 +176,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		} catch (Exception e) {
 			result = e.getMessage();
 		}
-		System.out.println("SERVER persistObject() result: " + result);
+		System.out.println("SERVER updateObject() result: " + result);
+		em.clear();
 		return result;
 	}
 
@@ -444,7 +446,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 
 			ev = (Event) getEventQuery.getSingleResult();
 		} catch (Exception e) {
-
+			// System.out.println();
+			e.printStackTrace();
 		}
 		return ev;
 	}
@@ -714,6 +717,44 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
+	public Boolean removeMediaFromEvent(String eventID,
+			String mediaIdToRemove) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (mediaIdToRemove == null || mediaIdToRemove.isEmpty()) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			// Search for a Media item with the given ID in the found Event
+			Media mediaToDelete = null;
+			for(Media m:ev.getEventMedia()){
+				if(m.getId().equals(mediaIdToRemove)){
+					mediaToDelete = m;
+					break;
+				}
+			}
+			// If no Media item exists in the Event ...
+			if(mediaToDelete==null){
+				return false;
+			}
+			Boolean deleteStatus = fsHelper.deleteFileFromEvent(mediaToDelete.getName(), ev.getEventName());
+			ev.removeMedia(mediaIdToRemove);
+			Boolean updateStatus = updateObject(ev).equals("ok");
+			if (deleteStatus && updateStatus) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	@Override
 	public Boolean addDevicesToEvent(String eventID,
 			ArrayList<PlaybackDevice> newDevices) {
 		if (eventID == null) {
@@ -778,7 +819,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		Boolean result = true;
 		// Add file to the event folder
 		result = fsHelper.moveFileToEvent(eventName, fileLocation, fileName);
-		if(!result){
+		if (!result) {
 			return false;
 		}
 

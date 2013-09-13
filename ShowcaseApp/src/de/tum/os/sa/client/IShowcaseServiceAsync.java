@@ -85,4 +85,7 @@ public interface IShowcaseServiceAsync {
 
 	void addFileToEvent(String eventID, String fileName, String fileLocation,
 			AsyncCallback<Boolean> callback);
+
+	void removeMediaFromEvent(String eventID, String mediaIdToRemove,
+			AsyncCallback<Boolean> callback);
 }
