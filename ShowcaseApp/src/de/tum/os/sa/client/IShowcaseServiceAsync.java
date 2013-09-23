@@ -88,4 +88,21 @@ public interface IShowcaseServiceAsync {
 
 	void removeMediaFromEvent(String eventID, String mediaIdToRemove,
 			AsyncCallback<Boolean> callback);
+
+	void removeDevicesByIdFromEvent(String eventID,
+			ArrayList<String> deviceIdsToRemove, AsyncCallback<Boolean> callback);
+
+	void getEventMapping(String eventID,
+			AsyncCallback<HashMap<PlaybackDevice, ArrayList<Media>>> callback);
+
+	void mapMediaToDeviceInevent(String eventID, String deviceID,
+			String mediaID, AsyncCallback<Boolean> callback);
+
+	void getEventMedia(String eventID, AsyncCallback<ArrayList<Media>> callback);
+
+	void unmapMediaFromDeviceInEvent(String eventID, String DeviceID,
+			String mediaID, AsyncCallback<Boolean> callback);
+
+	void setAndReturnEventLogo(String eventID, String pictureName,
+			AsyncCallback<String> callback);
 }

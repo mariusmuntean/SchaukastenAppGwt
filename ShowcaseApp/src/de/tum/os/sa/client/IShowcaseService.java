@@ -70,7 +70,7 @@ public interface IShowcaseService extends RemoteService {
 	Boolean deleteEvent(String eventId);
 
 	Boolean updateEventMediaToDeviceMapping(Event event,
-			HashMap<PlaybackDevice,ArrayList<Media>> mediaToDeviceMapping);
+			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping);
 	
 	Boolean updateEventMediaToDeviceMapping(String eventId,
 			HashMap<PlaybackDevice, ArrayList<Media>> mediaToDeviceMapping);
@@ -80,6 +80,7 @@ public interface IShowcaseService extends RemoteService {
 	
 	Boolean addDevicesToEvent(String eventID, ArrayList<PlaybackDevice> newDevices);
 	Boolean removeDevicesFromEvent(String eventID, ArrayList<PlaybackDevice> devicesToRemove);
+	Boolean removeDevicesByIdFromEvent(String eventID, ArrayList<String> deviceIdsToRemove);
 
 	Boolean startEvent(Event event);
 
@@ -147,4 +148,14 @@ public interface IShowcaseService extends RemoteService {
 	 * @return - An {@code ArrayListy<Media> 
 	 */
 	List<Media> getMediaForDeviceInEvent(String deviceID, String eventID);
+	
+	ArrayList<Media> getEventMedia(String eventID);
+	
+	HashMap<PlaybackDevice, ArrayList<Media>> getEventMapping(String eventID);
+	
+	Boolean mapMediaToDeviceInevent(String eventID, String deviceID, String mediaID);
+	
+	Boolean unmapMediaFromDeviceInEvent(String eventID, String DeviceID, String mediaID);
+	
+	String setAndReturnEventLogo(String eventID, String pictureName);
 }

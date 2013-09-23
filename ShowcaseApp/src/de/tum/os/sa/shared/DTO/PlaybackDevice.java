@@ -37,7 +37,7 @@ public class PlaybackDevice implements IsSerializable, Serializable {
 	 * @param deviceId
 	 *            - a unique device identified.
 	 * @param screenSize
-	 *            - the screen size in inches. May be considered when assigned to an event.
+	 *            - the screen size in inches. May be considered when device is assigned to an event.
 	 */
 	public PlaybackDevice(String deviceId, String deviceName, DeviceType deviceType,
 			Float screenSize) {

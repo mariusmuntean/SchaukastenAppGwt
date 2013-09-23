@@ -3,6 +3,7 @@ package de.tum.os.sa.client.models;
 import java.io.Serializable;
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
+import com.google.gwt.resources.client.ImageResource;
 
 import de.tum.os.sa.client.resources.Showcaseresources;
 import de.tum.os.sa.shared.MediaTypes;
@@ -25,6 +26,7 @@ public class DisplayableMedia extends BaseModelData implements Serializable {
 	private String id = "id";
 	private String description = "description";
 	private String imgName = "imgName";
+	private String imgSmall = "imgNameSmall";
 	private String type = "type";
 
 	/**
@@ -40,7 +42,7 @@ public class DisplayableMedia extends BaseModelData implements Serializable {
 		setType(type);
 		setDescription(description);
 		setImageName(imageName);
-		
+
 	}
 
 	public void setName(String newName) {
@@ -59,8 +61,55 @@ public class DisplayableMedia extends BaseModelData implements Serializable {
 		return get(type);
 	}
 
+	public void setImageSmall(String newImageNameSmall) {
+		// set(imgName, newImageName);
+		ImageResource iName = getImageSmall();
+		set(imgSmall, iName);
+	}
+
+	public ImageResource getImageSmall() {
+		Showcaseresources res = Showcaseresources.INSTANCE;
+		switch (getType()) {
+		case audio: {
+			return res.mp3Small();
+		}
+
+		case feed: {
+			return res.htmlSmall();
+		}
+
+		case html: {
+			return res.htmlSmall();
+		}
+
+		case image: {
+			return res.jpgSmall();
+		}
+
+		case other: {
+			return res._blankSmall();
+		}
+
+		case pdf: {
+			return res.pdfSmall();
+		}
+
+		case text: {
+			return res.txtSmall();
+		}
+
+		case video: {
+			return res.mpgSmall();
+		}
+		default:
+			return res._blankSmall();
+		}
+
+		// return get(imgName);
+	}
+
 	public void setImageName(String newImageName) {
-//		set(imgName, newImageName);
+		// set(imgName, newImageName);
 		String iName = getImageName();
 		set(imgName, iName);
 	}

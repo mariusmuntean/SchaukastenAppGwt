@@ -14,11 +14,11 @@ import javax.persistence.TemporalType;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import de.tum.os.sa.client.models.DisplayablePlaybackDevice;
 import de.tum.os.sa.shared.EventState;
 
 /**
- * DTO Representing an Event. Multiple devices are in an event, each playing
- * back none, one or multiple Media files.
+ * DTO Representing an Event. Multiple devices are in an event, each playing back none, one or multiple Media files.
  * 
  * @author Marius
  * 
@@ -35,8 +35,11 @@ public class Event implements Serializable, IsSerializable {
 
 	ArrayList<Media> eventMedia = new ArrayList<Media>();
 
-	ArrayList<PlaybackDevice> eventDevices = new ArrayList<PlaybackDevice>();
-
+	// ArrayList<PlaybackDevice> eventDevices = new ArrayList<PlaybackDevice>();
+	/**
+	 * @gwt.typeArgs <java.util.HashMap<de.tum.os.sa.shared.DTO.PlaybackDevice,
+	 *               java.util.ArrayList<de.tum.os.sa.shared.DTO.Media>>>
+	 */
 	HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 	EventState eventState;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -48,14 +51,13 @@ public class Event implements Serializable, IsSerializable {
 
 	public Event(String eventName, String eventId, String eventDescription,
 			String eventLocation) {
-		super();
 		this.eventName = eventName;
 		this.eventId = eventId;
 		this.eventDescription = eventDescription;
 		this.eventLocation = eventLocation;
 		this.eventState = EventState.stoped;
 		this.eventCreation = new Date();
-		
+
 	}
 
 	/**
@@ -66,11 +68,12 @@ public class Event implements Serializable, IsSerializable {
 	 * @return - true if the given device is in this event, false otherwise.
 	 */
 	public Boolean containsDevice(PlaybackDevice playbackDevice) {
-		if (this.eventMediaToDeviceMapping == null) {
+		if (this.eventMediaToDeviceMapping == null
+				|| eventMediaToDeviceMapping.keySet().size() == 0) {
 			return false;
 		}
 
-		return this.eventMediaToDeviceMapping.containsKey(playbackDevice);
+		return this.containsDeviceId(playbackDevice.getDeviceId());
 	}
 
 	/**
@@ -78,11 +81,11 @@ public class Event implements Serializable, IsSerializable {
 	 * 
 	 * @param deviceID
 	 *            - The ID of the device to search for.
-	 * @return - true if a device with the given ID is in this event, false
-	 *         otherwise.
+	 * @return - true if a device with the given ID is in this event, false otherwise.
 	 */
 	public Boolean containsDeviceId(String deviceID) {
-		if (this.eventMediaToDeviceMapping == null) {
+		if (this.eventMediaToDeviceMapping == null
+				|| eventMediaToDeviceMapping.keySet().size() == 0) {
 			return false;
 		}
 
@@ -130,7 +133,7 @@ public class Event implements Serializable, IsSerializable {
 	/**
 	 * @return the eventMediaToDeviceMapping
 	 */
-	public Map<PlaybackDevice, ArrayList<Media>> getEventMediaToDeviceMapping() {
+	public HashMap<PlaybackDevice, ArrayList<Media>> getEventMediaToDeviceMapping() {
 		return eventMediaToDeviceMapping;
 	}
 
@@ -140,8 +143,9 @@ public class Event implements Serializable, IsSerializable {
 	 */
 	public void setEventMediaToDeviceMapping(
 			HashMap<PlaybackDevice, ArrayList<Media>> eventMediaToDeviceMapping) {
-		
-		// ToDo if new mapping is set, update the media list and the devices list 
+
+		// ToDo if new mapping is set, update the media list and the devices
+		// list
 		this.eventMediaToDeviceMapping = eventMediaToDeviceMapping;
 	}
 
@@ -267,7 +271,7 @@ public class Event implements Serializable, IsSerializable {
 		if (mdToRemove != null) {
 			this.eventMedia.remove(mdToRemove);
 			// Also remove it from every list in the mapping.
-			for (ArrayList<Media> mediaList : this.eventMediaToDeviceMapping
+			for (List<Media> mediaList : this.eventMediaToDeviceMapping
 					.values()) {
 				for (Media md : mediaList) {
 					if (md.id.equals(mdToRemove.id)) {
@@ -287,57 +291,58 @@ public class Event implements Serializable, IsSerializable {
 	/**
 	 * @return the Devices in this event or null if there are none.
 	 */
-	public List<PlaybackDevice> getEventDevices() {
-		// if (eventMediaToDeviceMapping != null) {
-		// return new ArrayList<PlaybackDevice>(
-		// eventMediaToDeviceMapping.keySet());
-		// } else {
-		// return null;
-		// }
-		return this.eventDevices;
+	public ArrayList<PlaybackDevice> getEventDevices() {
+		return new ArrayList<PlaybackDevice>(eventMediaToDeviceMapping.keySet());
 	}
 
-	public void setEventDevices(ArrayList<PlaybackDevice> neweventDevices) {
-		if (neweventDevices != null) {
-			this.eventDevices = neweventDevices;
-		} else {
-			this.eventDevices = new ArrayList<PlaybackDevice>();
+	public void setEventDevices(ArrayList<PlaybackDevice> newEventDevices) {
+		if (eventMediaToDeviceMapping == null) {
+			eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 		}
 
-		// Maybe also clear the media to device mapping
-		this.eventMediaToDeviceMapping.clear();
+		eventMediaToDeviceMapping.keySet().clear();
+
+		if (newEventDevices != null) {
+			for (PlaybackDevice pd : newEventDevices) {
+				eventMediaToDeviceMapping.put(pd, null);
+			}
+		}
 	}
 
 	public void addDevice(PlaybackDevice pd) {
-		if (this.eventDevices == null) {
-			this.eventDevices = new ArrayList<PlaybackDevice>();
+		if (this.eventMediaToDeviceMapping == null) {
+			eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 		}
 
 		if (pd != null) {
-			this.eventDevices.add(pd);
+			this.eventMediaToDeviceMapping.put(pd, null);
 		}
 
 	}
 
 	public void addDevices(ArrayList<PlaybackDevice> pd) {
-		if (this.eventDevices == null) {
-			this.eventDevices = new ArrayList<PlaybackDevice>();
+		if (this.eventMediaToDeviceMapping == null) {
+			this.eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
 		}
 
 		if (pd != null && pd.size() > 0) {
-			this.eventDevices.addAll(pd);
+			for (PlaybackDevice dpd : pd) {
+				dpd.setAvailable(false);
+				eventMediaToDeviceMapping.put(dpd, null);
+			}
 		}
 
 	}
 
 	public void removeDevice(String deviceId) {
 		// Just some sanitization
-		if (this.eventDevices == null || deviceId == null || deviceId.isEmpty()) {
+		if (this.eventMediaToDeviceMapping == null || deviceId == null
+				|| deviceId.isEmpty()) {
 			return;
 		}
 		// Search for a device with the given ID
 		PlaybackDevice pdToRemove = null;
-		for (PlaybackDevice pd : this.eventDevices) {
+		for (PlaybackDevice pd : this.eventMediaToDeviceMapping.keySet()) {
 			if (pd.getDeviceId().equals(deviceId)) {
 				pdToRemove = pd;
 				break;
@@ -345,8 +350,10 @@ public class Event implements Serializable, IsSerializable {
 		}
 		// If any is found remove it.
 		if (pdToRemove != null) {
-			this.eventDevices.remove(pdToRemove);
-			this.eventMediaToDeviceMapping.remove(pdToRemove);
+			if (this.eventMediaToDeviceMapping.containsKey(pdToRemove)) {
+				this.eventMediaToDeviceMapping.remove(pdToRemove);
+				pdToRemove.setAvailable(true);
+			}
 		}
 	}
 
@@ -357,14 +364,23 @@ public class Event implements Serializable, IsSerializable {
 	}
 
 	public void removeDeviceList(ArrayList<PlaybackDevice> devicesToRemove) {
-		if (this.eventDevices == null || devicesToRemove == null
+		if (this.eventMediaToDeviceMapping == null || devicesToRemove == null
 				|| devicesToRemove.size() < 1) {
 			return;
 		}
 
 		for (PlaybackDevice pd : devicesToRemove) {
-			this.eventDevices.remove(pd);
-			this.eventMediaToDeviceMapping.remove(pd);
+			PlaybackDevice pdToRemove = null;
+			for (PlaybackDevice pds : eventMediaToDeviceMapping.keySet()) {
+				if (pds.getDeviceId().equals(pd.getDeviceId())) {
+					pdToRemove = pds;
+					break;
+				}
+			}
+			if (pdToRemove != null) {
+				pdToRemove.setAvailable(true);
+				eventMediaToDeviceMapping.keySet().remove(pdToRemove);
+			}
 		}
 	}
 
@@ -386,4 +402,138 @@ public class Event implements Serializable, IsSerializable {
 		return eventCreation;
 	}
 
+	/**
+	 * Tries to find and returns a {@link PlaybackDevice} in this event.
+	 * 
+	 * @param deviceID
+	 *            - The ID of the device to look for.
+	 * @return - The {@link PlaybackDevice} with the given ID or null.
+	 */
+	public PlaybackDevice getPlaybackDeviceById(String deviceID) {
+		if (deviceID == null || deviceID.isEmpty()
+				|| this.eventMediaToDeviceMapping == null
+				|| this.eventMediaToDeviceMapping.keySet().size() == 0) {
+			return null;
+		}
+
+		PlaybackDevice result = null;
+		for (PlaybackDevice pd : eventMediaToDeviceMapping.keySet()) {
+			if (pd.getDeviceId().equals(deviceID)) {
+				result = pd;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	public Media getMediaById(String mediaID) {
+		if (mediaID == null || mediaID.isEmpty() || this.eventMedia == null
+				|| this.eventMedia.size() == 0) {
+			return null;
+		}
+
+		Media result = null;
+		for (Media md : this.eventMedia) {
+			if (md.getId().equals(mediaID)) {
+				result = md;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Maps a {@link Media} item denoted by its ID to a {@link PlaybackDevice} item denoted by its ID.
+	 * 
+	 * @param mediaID
+	 * @param deviceID
+	 */
+	public Boolean mapMediaToDevice(String mediaID, String deviceID) {
+		// Input sanitization
+		if (mediaID == null || mediaID.isEmpty() || deviceID == null
+				|| deviceID.isEmpty()) {
+			return false;
+		}
+
+		final Media mediaToMap = getMediaById(mediaID);
+		if (mediaToMap == null) {
+			return false;
+		}
+
+		PlaybackDevice deviceToGetMedia = getPlaybackDeviceById(deviceID);
+		if (deviceToGetMedia == null) {
+			return false;
+		}
+
+		if (this.eventMediaToDeviceMapping == null) {
+			// Make a mapping structure and add the mapping
+			this.eventMediaToDeviceMapping = new HashMap<PlaybackDevice, ArrayList<Media>>();
+			ArrayList<Media> media = new ArrayList<Media>();
+			media.add(mediaToMap);
+			this.eventMediaToDeviceMapping.put(deviceToGetMedia, media);
+		} else {
+			// If there already are some Media items mapped to the device,
+			// append the new media to the list, otherwise create new mapping.
+			if (this.eventMediaToDeviceMapping.keySet().contains(
+					deviceToGetMedia)) {
+				if (this.eventMediaToDeviceMapping.get(deviceToGetMedia) != null) {
+					this.eventMediaToDeviceMapping.get(deviceToGetMedia).add(
+							mediaToMap);
+				} else {
+					ArrayList<Media> media = new ArrayList<Media>();
+					media.add(mediaToMap);
+					this.eventMediaToDeviceMapping.put(deviceToGetMedia, media);
+				}
+			} else {
+				ArrayList<Media> media = new ArrayList<Media>();
+				media.add(mediaToMap);
+				this.eventMediaToDeviceMapping.put(deviceToGetMedia, media);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * If both parameters represent a {@link Media} and a {@link PlaybackDevice} from this event and if the specified
+	 * {@link PlaybackDevice} has the {@link Media} mapped to it, the method tries to remove the mapping.
+	 * 
+	 * @param mediaID
+	 *            - An ID representing a {@link Media} item from this event.
+	 * @param deviceID
+	 *            - An ID representing a {@link PlaybackDevice} from this event.
+	 * @return - True if the operation succeeds, false otherwise.
+	 */
+	public Boolean unmapMediaFromDevice(String mediaID, String deviceID) {
+		// Input sanitization
+		if (mediaID == null || mediaID.isEmpty() || deviceID == null
+				|| deviceID.isEmpty()) {
+			return false;
+		}
+
+		final Media mediaToRemove = getMediaById(mediaID);
+		if (mediaToRemove == null) {
+			return false;
+		}
+
+		PlaybackDevice deviceToLoseMedia = getPlaybackDeviceById(deviceID);
+		if (deviceToLoseMedia == null) {
+			return false;
+		}
+
+		// Look if any media is mapped to this PlaybackDevice
+		List<Media> deviceMedia = this.eventMediaToDeviceMapping
+				.get(deviceToLoseMedia);
+		if (deviceMedia == null) {
+			// If no media is mapped to this device return false
+			return false;
+		} else {
+			// If there is some media mapped to this device, try to remove the
+			// one with the given ID. The remove(...) method return false if its parameter wasn't in the list.
+			return deviceMedia.remove(mediaToRemove);
+		}
+
+	}
 }

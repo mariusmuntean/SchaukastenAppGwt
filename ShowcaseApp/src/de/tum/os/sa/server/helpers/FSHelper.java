@@ -77,8 +77,8 @@ public class FSHelper {
 	 * Creates the folder structure needed to store application files.</br>
 	 * 
 	 * @param preserve
-	 *            - Indicates whether to preserve an existing folder
-	 *            structure(true) or to create an empty structure(false).
+	 *            - Indicates whether to preserve an existing folder structure(true) or to create an empty
+	 *            structure(false).
 	 * @return - true if creation succeeded, false otherwise.
 	 */
 	public Boolean createFolderStructure(Boolean preserve) {
@@ -160,8 +160,7 @@ public class FSHelper {
 	/**
 	 * @param eventName
 	 *            - The event name to check for.
-	 * @return - True if no folder with the provided name exists in the Events
-	 *         folder.
+	 * @return - True if no folder with the provided name exists in the Events folder.
 	 */
 	public Boolean isEventNameAvailable(String eventName) {
 		File f = new File(getEventsFolderPath() + File.separator + eventName);
@@ -177,9 +176,15 @@ public class FSHelper {
 		}
 	}
 
+	public Boolean isFileInEvent(String eventName, String fileName) {
+		File f = new File(getEventsFolderPath() + File.separator + eventName
+				+ File.separator + fileName);
+
+		return f.exists();
+	}
+
 	/**
-	 * Moves a file from a specified location to an Event's folder and renames
-	 * the file.
+	 * Moves a file from a specified location to an Event's folder and renames the file.
 	 * 
 	 * @param eventName
 	 *            - The name of the event to hold the file.
@@ -226,8 +231,8 @@ public class FSHelper {
 	}
 
 	/**
-	 * Returns the best-fitting {@link MediaTypes} for the provided file name.
-	 * If no match is found {@link MediaTypes#other} is returned.
+	 * Returns the best-fitting {@link MediaTypes} for the provided file name. If no match is found
+	 * {@link MediaTypes#other} is returned.
 	 * 
 	 * @param fileName
 	 *            - File name or file path.
@@ -264,5 +269,26 @@ public class FSHelper {
 		}
 
 		return operationStatus;
+	}
+
+	public String getAbsoluteFilePath(String eventName, String fileName) {
+		return getEventsFolderPath() + File.separator + eventName
+				+ File.separator + fileName;
+	}
+
+	public byte[] getFileAsByteArray(String eventName, String fileName) {
+		// Sanitize input
+		if (fileName == null || eventName == null || fileName.isEmpty()
+				|| eventName.isEmpty()) {
+			return new byte[0];
+		}
+		byte[] fileBytes;
+		String absoluteFilePath = getAbsoluteFilePath(eventName, fileName);
+		try {
+			fileBytes = Files.readAllBytes(Paths.get(absoluteFilePath));
+		} catch (Exception ex) {
+			fileBytes = new byte[0];
+		}
+		return fileBytes;
 	}
 }

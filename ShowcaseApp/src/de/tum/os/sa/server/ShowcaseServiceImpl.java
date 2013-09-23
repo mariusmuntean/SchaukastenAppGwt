@@ -1,5 +1,6 @@
 package de.tum.os.sa.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -27,8 +28,11 @@ import de.tum.os.sa.shared.DTO.Media;
 import de.tum.os.sa.shared.DTO.PlaybackDevice;
 import de.tum.os.sa.shared.commands.Command;
 
+import com.gargoylesoftware.htmlunit.javascript.host.EventNode;
+import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+import org.apache.commons.codec.binary.Base64;
 // Needed for the file upload part
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.DiskFileUpload;
@@ -49,7 +53,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	private ArrayList<PlaybackDevice> availableDevices = new ArrayList<PlaybackDevice>();
 	private ArrayList<PlaybackDevice> unavailableDevices = new ArrayList<PlaybackDevice>();
 	private ArrayList<Media> media = new ArrayList<Media>();
-	private List<Event> events = new ArrayList<Event>();
+	private ArrayList<Event> events = new ArrayList<Event>();
 
 	private ClientListener clientListen;
 	private ConnectionManager conManager;
@@ -104,8 +108,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	/*
-	 * Overriding the service method to hook myself in. I need this to intercept
-	 * uploaded files.
+	 * Overriding the service method to hook myself in. I need this to intercept uploaded files.
 	 */
 	private FileItem fi;
 
@@ -205,10 +208,22 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 				"Nexus 4", DeviceType.Smartphone, 4.5f);
 		PlaybackDevice pd4 = new PlaybackDevice(UUID.randomUUID().toString(),
 				"Galaxy Nexus", DeviceType.Smartphone, 4.5f);
+		PlaybackDevice pd5 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus One", DeviceType.Smartphone, 3.7f);
+		PlaybackDevice pd6 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus 4", DeviceType.Smartphone, 3.7f);
+		PlaybackDevice pd7 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Nexus 4", DeviceType.Smartphone, 4.5f);
+		PlaybackDevice pd8 = new PlaybackDevice(UUID.randomUUID().toString(),
+				"Htc One", DeviceType.Smartphone, 4.5f);
 		registeredDevices.add(pd1);
 		registeredDevices.add(pd2);
 		registeredDevices.add(pd3);
 		registeredDevices.add(pd4);
+		registeredDevices.add(pd5);
+		registeredDevices.add(pd6);
+		registeredDevices.add(pd7);
+		registeredDevices.add(pd8);
 	}
 
 	private void generateDummyMedia() {
@@ -308,8 +323,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	/**
-	 * Escape an html string. Escaping data received from the client helps to
-	 * prevent cross-site script vulnerabilities.
+	 * Escape an html string. Escaping data received from the client helps to prevent cross-site script vulnerabilities.
 	 * 
 	 * @param html
 	 *            the html string to escape
@@ -499,15 +513,14 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		return startEvent(event.getEventId());
 
 		/*
-		 * Send Play command including the EventID, the Android Clients will ask
-		 * for the media in that particular event that is theirs to display.
+		 * Send Play command including the EventID, the Android Clients will ask for the media in that particular event
+		 * that is theirs to display.
 		 * 
-		 * Similarly to getEventForDevice make a method
-		 * getMediaForDeviceInEvent(deviceID, eventId) that returns all the
+		 * Similarly to getEventForDevice make a method getMediaForDeviceInEvent(deviceID, eventId) that returns all the
 		 * media that is mapped to a device in a certain event.
 		 * 
-		 * This will be useful in the long term when a device could be used in
-		 * multiple events only one of which is active at one moment in time
+		 * This will be useful in the long term when a device could be used in multiple events only one of which is
+		 * active at one moment in time
 		 */
 
 	}
@@ -556,11 +569,9 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Boolean registerDevice(PlaybackDevice device) {
 		/*
-		 * Protocol: first the device connects to the serverSocket, if that is
-		 * successful the device is added to the clientIDToSocketMap and it
-		 * tries to call this method. Here I'm adding devices to the
-		 * clientIDToDeviceMap but only those that have successfully been added
-		 * to clientIDToSocketMap
+		 * Protocol: first the device connects to the serverSocket, if that is successful the device is added to the
+		 * clientIDToSocketMap and it tries to call this method. Here I'm adding devices to the clientIDToDeviceMap but
+		 * only those that have successfully been added to clientIDToSocketMap
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
 			clientIDToDeviceMap.put(device.getDeviceId(), device);
@@ -576,10 +587,9 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Boolean unregisterDevice(PlaybackDevice device) {
 		/*
-		 * Protocol: when a device has to be removed from the Schaukasten it has
-		 * the option to inform the server that it will become unavailable(to
-		 * avoid confusion). First I check if the device that wants to leave the
-		 * event was registered in the first place.
+		 * Protocol: when a device has to be removed from the Schaukasten it has the option to inform the server that it
+		 * will become unavailable(to avoid confusion). First I check if the device that wants to leave the event was
+		 * registered in the first place.
 		 */
 		if (clientIDToSocketMap.containsKey(device.getDeviceId())) {
 			clientIDToSocketMap.remove(device.getDeviceId());
@@ -631,7 +641,8 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public List<Media> getMediaForDeviceInEvent(String deviceID, String eventID) {
+	public ArrayList<Media> getMediaForDeviceInEvent(String deviceID,
+			String eventID) {
 		// Sanitize code
 		if (deviceID == null || deviceID.isEmpty() || eventID == null
 				|| eventID.isEmpty()) {
@@ -662,7 +673,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 			return null;
 		}
 
-		List<Media> result = event.getEventMediaToDeviceMapping().get(
+		ArrayList<Media> result = event.getEventMediaToDeviceMapping().get(
 				playbackDevice);
 
 		return result; // result could still be null so when calling this method
@@ -717,8 +728,7 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public Boolean removeMediaFromEvent(String eventID,
-			String mediaIdToRemove) {
+	public Boolean removeMediaFromEvent(String eventID, String mediaIdToRemove) {
 		if (eventID == null) {
 			return false;
 		}
@@ -731,17 +741,18 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		if (ev != null) {
 			// Search for a Media item with the given ID in the found Event
 			Media mediaToDelete = null;
-			for(Media m:ev.getEventMedia()){
-				if(m.getId().equals(mediaIdToRemove)){
+			for (Media m : ev.getEventMedia()) {
+				if (m.getId().equals(mediaIdToRemove)) {
 					mediaToDelete = m;
 					break;
 				}
 			}
 			// If no Media item exists in the Event ...
-			if(mediaToDelete==null){
+			if (mediaToDelete == null) {
 				return false;
 			}
-			Boolean deleteStatus = fsHelper.deleteFileFromEvent(mediaToDelete.getName(), ev.getEventName());
+			Boolean deleteStatus = fsHelper.deleteFileFromEvent(
+					mediaToDelete.getName(), ev.getEventName());
 			ev.removeMedia(mediaIdToRemove);
 			Boolean updateStatus = updateObject(ev).equals("ok");
 			if (deleteStatus && updateStatus) {
@@ -769,6 +780,11 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		if (ev != null) {
 			ev.addDevices(newDevices);
 			if (updateObject(ev).equals("ok")) {
+				// Update the list of registered devices to reflect changed availability
+				for (PlaybackDevice unavailableDevice : newDevices) {
+					changeRegisteredDeviceAvailability(
+							unavailableDevice.getDeviceId(), false);
+				}
 				return true;
 			} else {
 				return false;
@@ -793,6 +809,37 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		if (ev != null) {
 			ev.removeDeviceList(devicesToRemove);
 			if (updateObject(ev).equals("ok")) {
+				for (PlaybackDevice removedDevice : devicesToRemove) {
+					changeRegisteredDeviceAvailability(
+							removedDevice.getDeviceId(), true);
+				}
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public Boolean removeDevicesByIdFromEvent(String eventID,
+			ArrayList<String> deviceIdsToRemove) {
+		if (eventID == null) {
+			return false;
+		}
+
+		if (deviceIdsToRemove == null || deviceIdsToRemove.size() < 1) {
+			return true;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			ev.removeDevices(deviceIdsToRemove);
+			if (updateObject(ev).equals("ok")) {
+				for (String removedDeviceId : deviceIdsToRemove) {
+					changeRegisteredDeviceAvailability(removedDeviceId, true);
+				}
 				return true;
 			} else {
 				return false;
@@ -839,4 +886,138 @@ public class ShowcaseServiceImpl extends RemoteServiceServlet implements
 		return result;
 	}
 
+	/**
+	 * Tries to find the {@link PlaybackDevice} amongst the registered ones identified by the ID(param 1) and, if any is
+	 * found, changes its availability to the provided value(param 2).
+	 * 
+	 * @param deviceID
+	 *            - Unique device ID for the device to get its availability changed.
+	 * @param newAvailability
+	 *            - New value for the availability.
+	 */
+	private void changeRegisteredDeviceAvailability(String deviceID,
+			Boolean newAvailability) {
+		if (deviceID == null || deviceID.isEmpty() || newAvailability == null
+				|| this.registeredDevices == null
+				|| this.registeredDevices.size() == 0) {
+			return;
+		}
+
+		for (PlaybackDevice pd : this.registeredDevices) {
+			if (pd.getDeviceId().equals(deviceID)) {
+				pd.setAvailable(newAvailability);
+				break;
+			}
+		}
+
+	}
+
+	@Override
+	public HashMap<PlaybackDevice, ArrayList<Media>> getEventMapping(
+			String eventID) {
+		if (eventID == null || eventID.isEmpty()) {
+			return null;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev != null) {
+			return ev.getEventMediaToDeviceMapping();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean mapMediaToDeviceInevent(String eventID, String deviceID,
+			String mediaID) {
+		if (eventID == null || eventID.isEmpty() || deviceID == null
+				|| deviceID.isEmpty() || mediaID == null || mediaID.isEmpty()) {
+			return false;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev == null) {
+			return false;
+		}
+
+		return ev.mapMediaToDevice(mediaID, deviceID);
+	}
+
+	@Override
+	public ArrayList<Media> getEventMedia(String eventID) {
+		if (eventID == null || eventID.isEmpty()) {
+			return null;
+		}
+		Event ev = null;
+		try {
+			ev = getEvent(eventID);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		if (ev == null) {
+			return null;
+		} else {
+			return ev.getEventMedia();
+		}
+	}
+
+	@Override
+	public Boolean unmapMediaFromDeviceInEvent(String eventID, String DeviceID,
+			String mediaID) {
+		if (eventID == null || eventID.isEmpty() || DeviceID == null
+				|| DeviceID.isEmpty() || mediaID == null || mediaID.isEmpty()) {
+			return false;
+		}
+
+		Event ev = getEvent(eventID);
+		if (ev == null) {
+			return false;
+		}
+
+		return ev.unmapMediaFromDevice(mediaID, DeviceID);
+	}
+
+	@Override
+	public String setAndReturnEventLogo(String eventID, String pictureName) {
+		if (eventID == null || eventID.isEmpty() || pictureName == null
+				|| pictureName.isEmpty()) {
+			return ShowcaseConstants.ActionFailedMessage;
+		}
+		Event ev = getEvent(eventID);
+		if (ev == null) {
+			return ShowcaseConstants.ActionFailedMessage;
+		}
+
+		if (!fsHelper.isFileInEvent(ev.getEventName(), pictureName)) {
+			return ShowcaseConstants.ActionFailedMessage;
+		}
+
+		ev.setEventPictureUrl(fsHelper.getAbsoluteFilePath(ev.getEventName(),
+				pictureName));
+		// Persist event
+		String persistResult = persistObject(ev);
+		if (!persistResult.equals("ok")) {
+			fsHelper.deleteFileFromEvent(pictureName, ev.getEventName());
+			return ShowcaseConstants.ActionFailedMessage;
+		}
+		byte[] imageBytes = fsHelper.getFileAsByteArray(ev.getEventName(),
+				pictureName);
+		if (imageBytes.length == 0) {
+			return ShowcaseConstants.ActionFailedMessage;
+		}
+
+		String ext = "";
+		if (pictureName.substring(pictureName.length() - 4).toLowerCase()
+				.equals("png")) {
+			ext = "png";
+		} else {
+			ext = "jpg";
+		}
+
+		// String imageBytesBase64 = "data:image/" + ext + ";base64,"
+		// + Base64Utils.toBase64(imageBytes);
+		String imageBytesBase64 = "data:image/" + ext + ";base64,"
+				+ new String(Base64.encodeBase64(imageBytes));
+		return imageBytesBase64;
+	}
 }

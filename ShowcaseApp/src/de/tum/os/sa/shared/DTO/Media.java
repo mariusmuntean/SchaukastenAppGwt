@@ -12,18 +12,17 @@ import de.tum.os.sa.shared.MediaTypes;
  * @author Marius
  * 
  */
-public class Media implements Serializable, IsSerializable{
+public class Media implements IsSerializable, Serializable {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -9112586033216435998L;
-	String name;
+	private static final long serialVersionUID = 7166774742325395274L;
 
+	String name;
 	String id;
 	String description;
 	String location;
-
 	MediaTypes type;
 
 	// Empty constructor for serialization.
@@ -32,7 +31,6 @@ public class Media implements Serializable, IsSerializable{
 
 	public Media(String name, String id, String description, String location,
 			MediaTypes type) {
-		super();
 		this.name = name;
 		this.id = id;
 		this.description = description;
